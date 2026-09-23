@@ -1,0 +1,3361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Computer.Test — Kiểm tra phần cứng máy tính</title>
+  <style>
+    /* ===== FULLSCREEN FUNCTIONAL AREA ===== */
+    main.content:fullscreen {
+      background: var(--bg-deep);
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    /* Hỗ trợ cho các trình duyệt lõi webkit (Chrome, Safari, Edge) */
+    main.content:-webkit-full-screen {
+      background: var(--bg-deep);
+      padding: 2rem 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    main.content:fullscreen .test-section,
+    main.content:-webkit-full-screen .test-section {
+      width: 100%;
+      max-width: 86rem;
+    }
+
+    .fs-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    /* ===== CSS Variables (Tự động Sáng/Tối theo Theme Fletro) ===== */
+    
+    /* 1. Giao diện Sáng (Light Mode - Mặc định) */
+    .page-wrap {
+      --bg-deep: #f7f9fa;       /* Màu nền tổng thể */
+      --bg-surface: #ffffff;    /* Nền thẻ (card), hộp */
+      --bg-elevated: #e1e4e8;   /* Nền khi đang nhấn phím */
+      --text-primary: #1f2937;  /* Màu chữ chính */
+      --text-secondary: #4b5563;/* Màu chữ phụ */
+      --text-dim: #9ca3af;      /* Màu chữ mờ/ghi chú */
+      --border-default: #d1d5db;/* Màu viền */
+      
+      /* Giữ nguyên các màu điểm nhấn, tinh chỉnh nhẹ cho dễ đọc trên nền sáng */
+      --accent-coral: #ff5c38;
+      --accent-amber: #f5a623;
+      --accent-sky: #0284c7;    /* Xanh lam đậm hơn một chút */
+      --green-500: #16a34a;     /* Xanh lá đậm hơn một chút */
+      --red-500: #ef4444;
+    }
+
+    /* 2. Giao diện Tối (Dark Mode - Kích hoạt khi có class .drK từ Theme) */
+    .drK .page-wrap {
+      --bg-deep: #0a0a0a;
+      --bg-surface: #141414;
+      --bg-elevated: #1e1e1e;
+      --text-primary: #e8e8e8;
+      --text-secondary: #a0a0a0;
+      --text-dim: #555;
+      --border-default: #2a2a2a;
+      
+      --accent-coral: #ff5c38;
+      --accent-amber: #f5a623;
+      --accent-sky: #38bdf8;
+      --green-500: #22c55e;
+      --red-500: #ef4444;
+    }
+/* ===== Layout đã được sửa lỗi cho Blogger ===== */
+    .page-wrap { 
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      padding: 30px 10px;
+      margin-top: 20px;
+      border-radius: 12px;
+      position: relative;
+      z-index: 1; /* Nằm gọn dưới thanh Header dính của Blogger */
+    }
+    /* ===== Top Navigation Bar ===== */
+    .top-nav-bar {
+      width: 100%;
+      max-width: 86rem;
+      margin: 0 auto 1.5rem auto;
+      padding: 0 1.5rem;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    .btn-home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--accent-coral);
+      background: var(--bg-surface);
+      border: 1px solid var(--accent-coral);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .btn-home-link:hover {
+      background: var(--accent-coral);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 92, 56, 0.25);
+    }
+    .btn-home-link .home-icon {
+      flex-shrink: 0;
+    }
+    .btn-home-link .external-icon {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1;
+      transition: transform 0.2s ease;
+    }
+    .btn-home-link:hover .external-icon {
+      transform: translate(2px, -2px);
+    }
+
+    header.main-header {
+      position: relative;
+      max-width: 86rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      width: 100%;
+      margin-bottom: 3rem;
+    }
+
+    .issue-badge {
+      position: absolute;
+      top: 0; right: 1.5rem;
+      background: var(--accent-coral);
+      color: var(--bg-deep);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 0.375rem 0.75rem;
+      transform: rotate(3deg);
+      z-index: 10;
+    }
+
+    .main-title {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 2rem;
+      margin-top: 2rem;
+    }
+    .main-title .coral { color: var(--accent-coral); }
+
+    .subtitle-block {
+      border-left: 4px solid var(--accent-amber);
+      padding-left: 1.25rem;
+      max-width: 40rem;
+      margin-bottom: 3rem;
+    }
+    .subtitle-block p {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      line-height: 1.6;
+    }
+
+    /* ===== Nav Tabs ===== */
+    nav.tabs { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem; }
+   nav.tabs button {
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface); /* Đổi màu nền Tab thành nền hộp Sáng/Tối */
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    nav.tabs button:hover {
+      border-color: var(--accent-coral);
+      color: var(--accent-coral);
+    }
+    nav.tabs button.active {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+
+    /* ===== Dot divider ===== */
+    .dot-divider { display: flex; flex-wrap: wrap; gap: 6px; }
+    .dot-divider span {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--border-default);
+      display: inline-block;
+    }
+
+    /* ===== Main content ===== */
+    main.content {
+      flex: 1;
+      width: 100%;
+      max-width: 86rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ===== Card / Box ===== */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p { color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6; }
+
+    /* ===== Section wrapper for tests ===== */
+    .test-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
+      max-width: 86rem;
+      margin: 0 auto;
+      padding: 1rem 0;
+      margin-bottom: 5rem;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      padding: 0.5rem 1rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-coral {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+    .btn-coral:hover { opacity: 0.85; }
+    .btn-outline-coral {
+      background: transparent;
+      border-color: var(--accent-coral);
+      color: var(--accent-coral);
+    }
+    .btn-outline-coral:hover {
+      background: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border-default);
+      color: var(--text-secondary);
+    }
+    .btn-outline:hover { border-color: var(--text-dim); }
+    .btn-green {
+      background: rgba(34,197,94,0.2);
+      border-color: var(--green-500);
+      color: var(--green-500);
+    }
+    .btn-red {
+      background: var(--red-500);
+      border-color: var(--red-500);
+      color: #fff;
+    }
+
+    .label-xs {
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+    /* ===== KEYBOARD TEST ===== */
+    .kb-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      padding: 1rem;
+    }
+    .kb-toolbar-left { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .kb-toolbar-right { display: flex; gap: 1rem; }
+    .btn-group { display: flex; gap: 4px; }
+    .btn-group button {
+      flex: 1;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .btn-group button.active {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+    .btn-group button:hover:not(.active) { border-color: var(--text-dim); }
+
+    /* History bar */
+    .key-history {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      height: 3rem;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .key-history .placeholder {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      padding: 0 1rem;
+    }
+    .key-history .history-items {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      padding: 0 1rem;
+      padding-right: 6rem;
+    }
+    .history-chip {
+      flex-shrink: 0;
+      padding: 2px 10px;
+      background: rgba(56,189,248,0.1);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: var(--accent-sky);
+      font-size: 0.6875rem;
+      min-width: 2rem;
+      text-align: center;
+      animation: fadeIn 0.15s ease;
+    }
+    .history-count {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(10,10,10,0.9);
+      border: 1px solid var(--border-default);
+      padding: 2px 10px;
+      font-size: 0.625rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+
+    /* Keyboard layout */
+    .kb-container {
+      background: rgba(10,10,10,0.5);
+      border: 1px solid var(--border-default);
+      padding: 1.5rem 1rem;
+      overflow-x: auto;
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 8px;
+    }
+    .kb-scale-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      transform-origin: top center;
+      transition: transform 0.1s ease;
+      width: 100%;
+    }
+    .kb-inner { display: flex; flex-direction: column; align-items: center; width: fit-content; margin: 0 auto; }
+    .kb-rows { display: flex; flex-direction: column; gap: 4px; }
+    .kb-row { display: flex; gap: 4px; }
+    .kb-main-section { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+    .kb-sections { display: flex; gap: 24px; }
+    .kb-nav-section { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; justify-content: space-between; }
+    .kb-nav-grid { display: grid; grid-template-columns: repeat(3, 3rem); grid-template-rows: repeat(2, 3rem); gap: 4px; margin-bottom: 8px; }
+    .kb-arrows { display: flex; flex-direction: column; gap: 4px; align-items: center; margin-top: auto; }
+    .kb-arrows-row { display: flex; gap: 4px; }
+    .kb-numpad { display: grid; grid-template-columns: repeat(4, 3rem); grid-template-rows: repeat(5, 3rem); gap: 4px; flex-shrink: 0; }
+    .kb-function-row { display: flex; gap: 4px; margin-bottom: 8px; }
+
+    /* Key */
+    .key {
+      width: 3rem; height: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      transition: all 75ms;
+      user-select: none;
+      position: relative;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .key.key-small { font-size: 0.625rem; }
+    .key.key-span-h { grid-column: span 2; width: 100% !important; min-width: 6.125rem; }
+    .key.key-span-v { height: 100% !important; min-height: 6.125rem; }
+    .key.key-active {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: var(--bg-deep);
+      transform: scale(0.95);
+      z-index: 10;
+    }
+    .key.key-pressed {
+      background: var(--bg-elevated);
+      border-color: var(--accent-amber);
+      color: var(--text-primary);
+    }
+    .key:hover:not(.key-active):not(.key-pressed) { border-color: var(--text-dim); }
+    .key .shift-label {
+      position: absolute;
+      top: 4px; right: 8px;
+      font-size: 0.625rem;
+      opacity: 0.7;
+      line-height: 1;
+    }
+    .key .main-label {
+      position: absolute;
+      bottom: 6px; left: 8px;
+      line-height: 1;
+    }
+    .key-gap { background: transparent; border: none; pointer-events: none; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+    @media (min-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    .stat-item {
+      background: rgba(255,255,255,0.05);
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-label { font-size: 0.625rem; color: var(--text-secondary); margin-bottom: 4px; }
+    .stat-value { font-size: 1.125rem; font-weight: 700; }
+    .stat-value.sky { color: var(--accent-sky); }
+    .stat-value.primary { color: var(--text-primary); }
+
+    /* Mouse */
+    .mouse-row {
+      margin-top: 1rem;
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      width: 100%;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 3rem;
+    }
+    .mouse-btn { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .mouse-left, .mouse-right { flex: 1; }
+    .mouse-mid { width: 6rem; }
+
+    /* ===== MOUSE TEST (DOUBLE CLICK TEST) ===== */
+    .mouse-click-pad {
+      background: var(--bg-surface);
+      border: 2px dashed var(--border-default);
+      border-radius: 12px;
+      padding: 3.5rem 1.5rem;
+      text-align: center;
+      cursor: crosshair;
+      user-select: none;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      position: relative;
+      min-height: 180px;
+    }
+    .mouse-click-pad:hover {
+      border-color: var(--accent-coral);
+      background: rgba(255, 92, 56, 0.02);
+    }
+    .mouse-click-pad.active-btn-0 {
+      border-color: var(--accent-sky);
+      background: rgba(2, 132, 199, 0.08);
+    }
+    .mouse-click-pad.active-btn-1 {
+      border-color: var(--green-500);
+      background: rgba(22, 163, 74, 0.08);
+    }
+    .mouse-click-pad.active-btn-2 {
+      border-color: var(--accent-amber);
+      background: rgba(245, 166, 35, 0.08);
+    }
+    .mouse-click-pad.has-error {
+      border-color: var(--red-500) !important;
+      background: rgba(239, 68, 68, 0.12) !important;
+      animation: padShake 0.35s ease;
+    }
+    @keyframes padShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .mouse-pad-icon {
+      font-size: 2.5rem;
+      line-height: 1;
+      opacity: 0.85;
+    }
+    .mouse-pad-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .mouse-pad-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      line-height: 1.5;
+    }
+
+    .mouse-visual-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 640px) {
+      .mouse-visual-grid { grid-template-columns: 1fr; }
+    }
+    .mouse-card-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mouse-card-btn:hover {
+      border-color: var(--text-dim);
+    }
+    .mouse-card-btn.active {
+      background: var(--bg-elevated);
+      transform: scale(0.98);
+    }
+    .mouse-card-btn.has-error {
+      border-color: var(--red-500);
+      background: rgba(239, 68, 68, 0.08);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.35);
+    }
+    .mouse-card-btn.card-warning-nudge {
+      border-color: var(--accent-amber);
+      background: rgba(245, 166, 35, 0.12);
+      animation: cardShake 0.3s ease;
+    }
+    @keyframes cardShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    .mcb-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .mcb-count {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-sky);
+    }
+    .mcb-err-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red-500);
+    }
+
+    .mouse-alert-box {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .mouse-alert-box.normal {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--green-500);
+    }
+    .mouse-alert-box.error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--red-500);
+      color: var(--red-500);
+      animation: alertPulse 1s infinite alternate;
+    }
+    @keyframes alertPulse {
+      from { box-shadow: 0 0 4px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 0 14px rgba(239, 68, 68, 0.5); }
+    }
+
+    .mouse-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .mouse-history-table th, .mouse-history-table td {
+      padding: 0.6rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-default);
+    }
+    .mouse-history-table th {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .mouse-history-table tr.error-row {
+      background: rgba(239, 68, 68, 0.08);
+      color: var(--red-500);
+      font-weight: 600;
+    }
+    .mouse-history-wrapper {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* ===== SCREEN TEST ===== */
+    .color-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .color-swatch-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; cursor: pointer; }
+    .color-swatch {
+      width: 4rem; height: 4rem;
+      border: 2px solid var(--border-default);
+      transition: all 0.15s;
+    }
+    .color-swatch.selected { border-color: var(--accent-coral); transform: scale(1.1); }
+    .color-swatch:hover:not(.selected) { border-color: var(--text-dim); }
+    .color-name { font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+    .color-name.selected { color: var(--accent-coral); }
+
+    .brightness-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    input[type=range] { width: 100%; height: 6px; cursor: pointer; accent-color: var(--accent-coral); }
+
+    #screen-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      cursor: pointer;
+    }
+    #screen-overlay.active { display: block; }
+    .screen-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* ===== WEBCAM TEST ===== */
+    .cam-select {
+      width: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-default);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .cam-select:focus { outline: none; border-color: var(--accent-coral); }
+
+    .cam-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-default);
+    }
+    .cam-status-row { display: flex; align-items: center; gap: 0.5rem; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.on { background: var(--green-500); animation: pulse 2s ease-in-out infinite; }
+    .status-dot.off { background: var(--red-500); }
+
+    .video-wrap {
+      aspect-ratio: 16/9;
+      background: var(--bg-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+
+    .loading-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+    }
+    .spinner {
+      width: 2rem; height: 2rem;
+      border: 2px solid var(--accent-coral);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    /* ===== MIC TEST ===== */
+    .volume-bar-wrap { margin-bottom: 1rem; }
+    .volume-bar-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .volume-track { width: 100%; height: 1rem; background: var(--bg-deep); overflow: hidden; }
+    .volume-fill { height: 100%; transition: width 75ms, background 0.2s; }
+    .vol-green { background: var(--green-500); }
+    .vol-amber { background: var(--accent-amber); }
+    .vol-red { background: var(--red-500); }
+
+    audio { width: 100%; height: 2.5rem; }
+
+    /* ===== SPEAKER TEST ===== */
+    .tracks-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    @media (min-width: 768px) {
+      .tracks-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .track-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .track-card:hover { border-color: var(--text-dim); }
+    .track-card.playing { border-color: var(--accent-coral); }
+    .track-body { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; }
+    .track-icon {
+      width: 3rem; height: 3rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      border: 1px solid var(--border-default);
+      background: var(--bg-deep);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .track-card.playing .track-icon {
+      border-color: var(--accent-coral);
+      background: rgba(255,92,56,0.1);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .track-info { flex: 1; min-width: 0; }
+    .track-name { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
+    .track-card.playing .track-name { color: var(--accent-coral); }
+    .track-desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+    .track-btn {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.375rem 0.75rem;
+      border: 1px solid var(--border-default);
+      color: var(--text-dim);
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .track-card.playing .track-btn {
+      background: var(--accent-coral);
+      border-color: var(--accent-coral);
+      color: var(--bg-deep);
+    }
+    .waveform {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      padding: 0 1.25rem 1rem;
+      height: 2rem;
+      overflow: hidden;
+    }
+    .wave-bar {
+      flex: 1;
+      background: rgba(255,92,56,0.6);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* ===== BATTERY TEST ===== */
+    .battery-bar-wrap {
+      position: relative;
+      width: 100%;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .battery-body {
+      flex: 1;
+      height: 100%;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-default);
+      overflow: hidden;
+      position: relative;
+    }
+    .battery-fill { height: 100%; transition: width 0.5s; }
+    .battery-fill.charging { background: var(--accent-sky); }
+    .battery-fill.high { background: var(--green-500); }
+    .battery-fill.mid { background: var(--accent-amber); }
+    .battery-fill.low { background: var(--accent-coral); }
+    .battery-pct {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .battery-tip {
+      width: 8px; height: 20px;
+      background: var(--border-default);
+      flex-shrink: 0;
+    }
+    .battery-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .battery-info-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      padding: 1rem;
+      text-align: center;
+    }
+    .battery-val { font-size: 1.125rem; font-weight: 700; }
+    .cmd-box {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-default);
+      padding: 1rem;
+    }
+    .cmd-box code { flex: 1; font-size: 0.875rem; color: var(--accent-sky); font-family: 'Consolas', monospace; }
+    .cmd-box-sm code { font-size: 0.6875rem; color: var(--accent-amber); word-break: break-all; line-height: 1.5; }
+    .ping-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-sky);
+      animation: ping 1s ease-in-out infinite;
+    }
+
+    /* ===== FOOTER ===== */
+    footer.main-footer {
+      background: rgba(20,20,20,0.3);
+      border-top: 1px solid var(--border-default);
+      padding: 4rem 0;
+    }
+    .footer-grid {
+      max-width: 86rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+    @media (min-width: 768px) {
+      .footer-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    .footer-section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .footer-section h2 .mark { font-size: 0.75rem; letter-spacing: 0.1em; }
+    .footer-section h2 .mark.sky { color: var(--accent-sky); }
+    .footer-section h2 .mark.amber { color: var(--accent-amber); }
+    .footer-section .text-block { display: flex; flex-direction: column; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.7; }
+    kbd {
+      padding: 2px 6px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-default);
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-family: 'Consolas', monospace;
+    }
+
+    /* ===== Back to top ===== */
+    #back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      z-index: 100;
+      transition: all 0.2s;
+    }
+    #back-to-top:hover { border-color: var(--accent-coral); color: var(--accent-coral); }
+    #back-to-top.visible { display: flex; }
+
+    /* Troubleshooting toggle */
+    .trouble-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.625rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-sky);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      width: 100%;
+    }
+    .trouble-toggle .line { height: 1px; flex: 1; background: rgba(56,189,248,0.2); }
+    .trouble-toggle:hover .line { background: rgba(56,189,248,0.4); }
+    .trouble-content { display: none; margin-top: 1rem; }
+    .trouble-content.open { display: block; }
+    .warn-box {
+      background: rgba(255,92,56,0.1);
+      border: 1px solid var(--accent-coral);
+      padding: 1rem;
+    }
+
+    /* Misc utils */
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .mt-3 { margin-top: 0.75rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-3 { margin-bottom: 0.75rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .pt-4 { padding-top: 1rem; }
+    .border-t { border-top: 1px solid var(--border-default); }
+    .text-center { text-align: center; }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-sky { color: var(--accent-sky); }
+    .text-coral { color: var(--accent-coral); }
+    .text-amber { color: var(--accent-amber); }
+    .text-dim { color: var(--text-dim); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-primary { color: var(--text-primary); }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hidden { display: none !important; }
+    .space-y > * + * { margin-top: 1rem; }
+    .italic { font-style: italic; }
+    strong.coral { color: var(--accent-coral); }
+    strong.amber { color: var(--accent-amber); }
+    strong.sky { color: var(--accent-sky); }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <!-- Top Navigation Link -->
+  <div class="top-nav-bar">
+    <a href="https://lethetuanpc.blogspot.com/" target="_blank" rel="noopener noreferrer" class="btn-home-link" title="Về trang chủ LeTheTuanPC">
+      <svg class="home-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>Về trang chủ LeTheTuanPC</span>
+      <span class="external-icon">↗</span>
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="main-header animate-fade-up">
+
+    <div class="subtitle-block">
+      <p>Công cụ kiểm tra phần cứng máy tính trực tuyến</p>
+    </div>
+
+    <!-- Nav Tabs -->
+    <nav class="tabs" id="tab-nav">
+      <button class="active" data-tab="keyboard">⌨️ Bàn phím</button>
+      <button data-tab="mouse">🖱️ Chuột & Double Click</button>
+      <button data-tab="screen">🖥️ Màn hình</button>
+      <button data-tab="webcam">📷 Webcam</button>
+      <button data-tab="micro">🎙️ Micro</button>
+      <button data-tab="speaker">🔊 Loa</button>
+      <button data-tab="battery">🔋 Pin</button>
+    </nav>
+   
+
+    <div class="dot-divider">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </header>
+
+  <!-- Content Area -->
+  <main class="content">
+	<!-- Nút phóng to/thu nhỏ khu vực chức năng -->
+    <div style="width: 100%; max-width: 86rem; margin: 0 auto; display: flex; justify-content: flex-end;">
+      <button id="fs-func-btn" class="btn btn-outline-coral fs-toggle-btn">
+        <span class="fs-icon" style="font-size: 1rem; line-height: 1;">⛶</span> 
+        <span class="fs-text">Phóng to khu vực Test</span>
+      </button>
+    </div>
+    <!-- ===== KEYBOARD TAB ===== -->
+    <div class="tab-panel active" id="panel-keyboard">
+      <div class="test-section animate-fade-up">
+        <!-- Toolbar -->
+        <div class="kb-toolbar">
+          <div class="kb-toolbar-left">
+            <div>
+              <span class="label-xs">Bố cục</span>
+              <div class="btn-group" id="layout-btns" style="width:180px">
+                <button class="active" data-layout="100">100%</button>
+                <button data-layout="80">80%</button>
+                <button data-layout="60">60%</button>
+              </div>
+            </div>
+            <div>
+              <span class="label-xs">Hệ điều hành</span>
+              <div class="btn-group" id="os-btns" style="width:120px">
+                <button class="active" data-os="Win">Win</button>
+                <button data-os="Mac">Mac</button>
+              </div>
+            </div>
+          </div>
+          <div class="kb-toolbar-right">
+            <div>
+              <span class="label-xs">Âm thanh</span>
+              <button class="btn btn-green" id="sound-btn" style="min-width:72px">BẬT</button>
+            </div>
+            <div>
+              <span class="label-xs">Thao tác</span>
+              <button class="btn btn-outline-coral" id="reset-btn" style="min-width:72px">ĐẶT LẠI</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key History -->
+        <div class="key-history" id="key-history-bar">
+          <div class="placeholder" id="history-placeholder">Nhấn phím bất kỳ để bắt đầu</div>
+          <div class="history-items" id="history-items" style="display:none"></div>
+          <div class="history-count" id="history-count">0 phím</div>
+        </div>
+
+        <!-- Keyboard Container -->
+        <div class="kb-container" id="kb-container">
+          <div class="kb-scale-wrapper" id="kb-scale-wrapper">
+            <div class="kb-inner" id="kb-inner">
+              <div class="kb-rows" id="keyboard-layout"></div>
+              <!-- Mouse -->
+              <div class="mouse-row" id="mouse-row">
+                <div class="key mouse-btn mouse-left" id="mouse-left" data-mouse="Left">Chuột trái</div>
+                <div class="key mouse-btn mouse-mid" id="mouse-mid" data-mouse="Middle">Chuột giữa</div>
+                <div class="key mouse-btn mouse-right" id="mouse-right" data-mouse="Right">Chuột phải</div>
+              </div>
+              <div style="margin-top: 0.75rem; text-align: center;">
+                <button type="button" class="btn btn-outline-coral" id="btn-goto-mouse-tab" style="font-size:0.75rem; padding: 0.4rem 1rem;">
+                  🖱️ Mở công cụ kiểm tra chi tiết lỗi Double Click chuột →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Số phím đang nhấn</span>
+              <span class="stat-value sky" id="stat-active">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tổng số phím đã nhấn</span>
+              <span class="stat-value primary" id="stat-total">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Phím nhấn nhiều nhất</span>
+              <span class="stat-value primary truncate" id="stat-most">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Mã phím cuối</span>
+              <span class="stat-value primary truncate" id="stat-last">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tốc độ quét (Hz)</span>
+              <span class="stat-value primary" id="stat-scan">0 Hz</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Khoảng cách phím (ms)</span>
+              <span class="stat-value primary" id="stat-interval">0 ms</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Nhấn / giây</span>
+              <span class="stat-value sky" id="stat-cps">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Nhấn / phút</span>
+              <span class="stat-value sky" id="stat-apm">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MOUSE & DOUBLE CLICK TAB ===== -->
+    <div class="tab-panel" id="panel-mouse">
+      <div class="test-section animate-fade-up">
+        <!-- Header info -->
+        <div class="card">
+          <h2>Kiểm tra chuột & Phát hiện lỗi Double Click</h2>
+          <p>Kiểm tra độ phản hồi của các nút chuột và tự động phát hiện hiện tượng switch chuột bị lỗi Double Click (chập chờn tiếp điểm, nhấn 1 lần nhận 2 lần click do hỏng lá đồng microswitch).</p>
+        </div>
+
+        <!-- Toolbar & Settings -->
+        <div class="card">
+          <div class="kb-toolbar" style="border:none; padding:0; background:transparent;">
+            <div class="kb-toolbar-left">
+              <div>
+                <span class="label-xs">Ngưỡng phát hiện lỗi (Debounce Time)</span>
+                <div class="btn-group" id="mouse-threshold-btns" style="max-width:360px">
+                  <button data-threshold="50">50 ms</button>
+                  <button class="active" data-threshold="80">80 ms (Khuyên dùng)</button>
+                  <button data-threshold="100">100 ms</button>
+                  <button data-threshold="120">120 ms</button>
+                </div>
+              </div>
+            </div>
+            <div class="kb-toolbar-right">
+              <div>
+                <span class="label-xs">Âm thanh cảnh báo</span>
+                <button class="btn btn-green" id="mouse-sound-btn" style="min-width:72px">BẬT</button>
+              </div>
+              <div>
+                <span class="label-xs">Thao tác</span>
+                <button class="btn btn-outline-coral" id="mouse-reset-btn" style="min-width:72px">ĐẶT LẠI</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert Status Banner -->
+        <div class="mouse-alert-box normal" id="mouse-status-banner">
+          <span style="font-size: 1.3rem;">ℹ️</span>
+          <span id="mouse-status-text">Chưa phát hiện lỗi double click. Hãy click nhiều lần với tốc độ thông thường vào vùng kiểm tra bên dưới.</span>
+        </div>
+
+        <!-- Interactive Click Pad -->
+        <div class="mouse-click-pad" id="mouse-click-pad">
+          <div class="mouse-pad-icon">🖱️</div>
+          <div class="mouse-pad-title">NHẤN VÀO ĐÂY ĐỂ KIỂM TRA CHUỘT</div>
+          <div class="mouse-pad-desc">Hỗ trợ <strong>Chuột trái</strong>, <strong>Chuột phải</strong>, <strong>Chuột giữa</strong>, và <strong>Cuộn chuột</strong> (Menu chuột phải đã được chặn trong ô này để bạn click thoải mái). Bạn cũng có thể nhấn giữ để kiểm tra nút có bị tuột không.</div>
+          <div id="mouse-pad-live-status" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-coral); margin-top: 4px; min-height: 1.2rem;"></div>
+        </div>
+
+        <!-- Visual Button Cards -->
+        <div class="mouse-visual-grid">
+          <div class="mouse-card-btn" id="mcb-left" data-mbtn="0">
+            <span class="mcb-name">Chuột trái (Left)</span>
+            <span class="mcb-count" id="m-stat-l-clicks">0</span>
+            <span class="text-dim text-xs">lần click</span>
+            <div class="mcb-err-tag" id="m-err-badge-l" style="display:none">⚠️ 0 lỗi Double Click</div>
+          </div>
+          <div class="mouse-card-btn" id="mcb-middle" data-mbtn="1">
+            <span class="mcb-name">Chuột giữa & Cuộn (Middle)</span>
+            <span class="mcb-count" id="m-stat-m-clicks">0</span>
+            <span class="text-dim text-xs" id="m-stat-wheel-text">Cuộn: 0</span>
+            <span class="text-dim text-xs" style="font-style:italic;">(Nhấn bánh xe con lăn chuột xuống)</span>
+            <div class="mcb-err-tag" id="m-err-badge-m" style="display:none">⚠️ 0 lỗi Double Click</div>
+          </div>
+          <div class="mouse-card-btn" id="mcb-right" data-mbtn="2">
+            <span class="mcb-name">Chuột phải (Right)</span>
+            <span class="mcb-count" id="m-stat-r-clicks">0</span>
+            <span class="text-dim text-xs">lần click</span>
+            <div class="mcb-err-tag" id="m-err-badge-r" style="display:none">⚠️ 0 lỗi Double Click</div>
+          </div>
+        </div>
+
+        <!-- Detailed Stats Grid -->
+        <div class="card">
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Tổng số lần click</span>
+              <span class="stat-value primary" id="m-stat-total-clicks">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Tổng lỗi Double Click</span>
+              <span class="stat-value" id="m-stat-total-errors" style="color: var(--green-500)">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Khoảng cách gần nhất</span>
+              <span class="stat-value primary" id="m-stat-last-interval">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Khoảng cách nhanh nhất</span>
+              <span class="stat-value primary" id="m-stat-min-interval">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Click History Log -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <h2>Nhật ký click chuột gần nhất</h2>
+            <span class="text-dim text-xs" id="m-history-count">0 sự kiện</span>
+          </div>
+          <div class="mouse-history-wrapper">
+            <table class="mouse-history-table">
+              <thead>
+                <tr>
+                  <th style="width: 20%">Thời gian</th>
+                  <th style="width: 25%">Nút chuột</th>
+                  <th style="width: 25%">Khoảng cách giữa 2 click</th>
+                  <th style="width: 30%">Đánh giá</th>
+                </tr>
+              </thead>
+              <tbody id="mouse-history-tbody">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--text-dim); padding: 1.5rem;">Chưa có dữ liệu click. Hãy click vào ô kiểm tra bên trên.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN TAB ===== -->
+    <div class="tab-panel" id="panel-screen">
+      <div class="test-section animate-fade-up">
+        <div class="card">
+          <h2>Kiểm tra màn hình</h2>
+          <p>Hiển thị từng màu trên toàn màn hình để phát hiện điểm chết (dead pixel) hoặc điểm kẹt (stuck pixel)</p>
+        </div>
+
+        <!-- Color picker -->
+        <div class="card">
+          <span class="label-xs" style="margin-bottom:1rem">Chọn màu bắt đầu</span>
+          <div class="color-grid" id="color-grid"></div>
+        </div>
+
+        <!-- Brightness -->
+        <div class="card">
+          <div class="brightness-row">
+            <span class="label-xs" style="margin-bottom:0">Độ sáng màn hình</span>
+            <span class="stat-value primary" id="brightness-val">100%</span>
+          </div>
+          <input type="range" id="brightness-slider" min="10" max="100" step="5" value="100" />
+          <p class="text-dim text-xs mt-3">Lưu ý: Thanh này điều chỉnh độ sáng của màu hiển thị trong ô kiểm tra, không phải độ sáng phần cứng màn hình</p>
+        </div>
+
+        <!-- Start button -->
+        <div class="flex items-center gap-3">
+          <button class="btn btn-coral" id="start-screen-btn" style="padding:0.75rem 2rem;font-size:0.875rem">Bắt đầu kiểm tra</button>
+          <p class="text-dim text-xs">Sẽ chuyển sang chế độ toàn màn hình</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WEBCAM TAB ===== -->
+    <div class="tab-panel" id="panel-webcam">
+      <div class="test-section animate-fade-up">
+        <div class="card">
+          <h2>Kiểm tra Webcam</h2>
+          <p>Chọn camera và xem nó còn nhìn thấy bạn không?</p>
+          <p style="margin-top:0.5rem">Nhớ kiểm tra xem bạn có tắt camera bằng phím bấm vật lý, hay có dán băng dính che camera không, đã gạt mở thanh trượt che camera chưa?</p>
+        </div>
+
+        <div class="loading-box" id="cam-loading">
+          <div class="spinner"></div>
+          <p class="text-secondary text-sm">Đang quét camera</p>
+        </div>
+
+        <div id="cam-error-box" class="loading-box" style="display:none">
+          <p class="text-coral" style="font-size:1.25rem;margin-bottom:0.5rem">⚠️</p>
+          <p class="text-secondary text-sm text-center" style="padding:0 1rem" id="cam-error-msg"></p>
+          <button class="btn btn-coral mt-4" id="cam-retry-btn">Thử lại</button>
+        </div>
+
+        <div id="cam-content" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="card">
+              <span class="label-xs">Chọn camera</span>
+              <select class="cam-select" id="cam-select"></select>
+            </div>
+
+            <div class="card" style="padding:0">
+              <div class="cam-header">
+                <div class="cam-status-row">
+                  <div class="status-dot off" id="cam-dot"></div>
+                  <span class="text-sm truncate" id="cam-label">Camera</span>
+                </div>
+                <span class="label-xs" style="margin-bottom:0" id="cam-status-text">Lỗi</span>
+              </div>
+              <div class="video-wrap">
+                <video id="cam-video" autoplay playsinline muted style="display:none;width:100%;height:100%;object-fit:cover"></video>
+                <p class="text-dim text-sm" id="cam-no-video">Không thể mở camera</p>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:center">
+              <button class="btn btn-outline-coral" id="cam-rescan-btn">Quét lại</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MIC TAB ===== -->
+    <div class="tab-panel" id="panel-micro">
+      <div class="test-section animate-fade-up">
+        <div class="card">
+          <h2>Kiểm tra Micro</h2>
+          <p>Chọn micro và kiểm tra xem micro còn nghe bạn nói không?</p>
+          <p style="margin-top:0.5rem">Nhớ kiểm tra xem bạn có tắt micro bằng phím bấm vật lý, hay có dán băng dính che micro không?</p>
+          <p style="margin-top:0.5rem">Micro trên laptop Windows thường ở gần camera, còn trên MacBook thường ở phía trên bàn phím, gần touchbar (nếu có)</p>
+        </div>
+
+        <div class="loading-box" id="mic-loading">
+          <div class="spinner"></div>
+          <p class="text-secondary text-sm">Đang quét micro</p>
+        </div>
+
+        <div id="mic-error-box" class="loading-box" style="display:none">
+          <p class="text-coral" style="font-size:1.25rem;margin-bottom:0.5rem">⚠️</p>
+          <p class="text-secondary text-sm text-center" style="padding:0 1rem" id="mic-error-msg"></p>
+          <button class="btn btn-coral mt-4" id="mic-retry-btn">Thử lại</button>
+        </div>
+
+        <div id="mic-content" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <div class="card">
+              <span class="label-xs">Chọn micro</span>
+              <select class="cam-select" id="mic-select"></select>
+            </div>
+
+            <div class="card" style="padding:0">
+              <div class="cam-header">
+                <div class="cam-status-row">
+                  <div class="status-dot off" id="mic-dot"></div>
+                  <span class="text-sm truncate" id="mic-label">Micro</span>
+                </div>
+                <span class="label-xs" style="margin-bottom:0" id="mic-status-text">Lỗi</span>
+              </div>
+
+              <div style="padding:1.5rem" id="mic-active-content">
+                <!-- Volume bar -->
+                <div class="volume-bar-wrap">
+                  <div class="volume-bar-top">
+                    <span class="label-xs" style="margin-bottom:0">Âm thanh</span>
+                    <span class="text-xs" style="font-weight:700" id="mic-vol-pct">0%</span>
+                  </div>
+                  <div class="volume-track">
+                    <div class="volume-fill vol-green" id="mic-vol-bar" style="width:0%"></div>
+                  </div>
+                </div>
+
+                <!-- Gain -->
+                <div style="margin-bottom:1rem">
+                  <div class="volume-bar-top">
+                    <span class="label-xs" style="margin-bottom:0">Âm lượng</span>
+                    <span class="text-xs" style="font-weight:700" id="mic-gain-pct">100%</span>
+                  </div>
+                  <input type="range" id="mic-gain-slider" min="0" max="100" step="5" value="100" />
+                </div>
+
+                <!-- Record buttons -->
+                <div style="display:flex;gap:0.75rem;margin-bottom:1rem">
+                  <button class="btn btn-coral" id="mic-record-btn" style="flex:1;padding:0.75rem">🎙 Thu âm</button>
+                </div>
+
+                <!-- Playback -->
+                <div id="mic-playback" style="display:none">
+                  <span class="label-xs">Phát lại bản ghi</span>
+                  <audio id="mic-audio" controls></audio>
+                </div>
+
+                <p class="text-dim text-sm text-center" id="mic-error-inline" style="display:none;padding:1.5rem 0">Không thể mở micro này</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SPEAKER TAB ===== -->
+    <div class="tab-panel" id="panel-speaker">
+      <div class="test-section animate-fade-up">
+        <div class="card">
+          <h2>Kiểm tra Loa</h2>
+          <p>Phát các âm tần thử nghiệm để kiểm tra xem loa còn SỦA với bạn được không? 🤡</p>
+          <p style="margin-top:0.5rem">Nhấn vào từng ô để phát/dừng âm thanh</p>
+          <p style="margin-top:0.5rem">Nếu âm thanh nghe bị <strong class="amber">rè</strong> → loa có thể bị bụi hoặc hư phần cứng. Nếu <strong class="coral">mất một kênh</strong> → kiểm tra cài đặt âm thanh stereo hoặc đã hư phần cứng</p>
+        </div>
+
+        <!-- Volume -->
+        <div class="card">
+          <div class="brightness-row">
+            <span class="label-xs" style="margin-bottom:0">Âm lượng</span>
+            <span class="stat-value primary" id="speaker-vol-val">70%</span>
+          </div>
+          <input type="range" id="speaker-vol-slider" min="0" max="100" step="5" value="70" />
+        </div>
+
+        <!-- Tracks -->
+        <div class="tracks-grid" id="tracks-grid"></div>
+      </div>
+    </div>
+
+    <!-- ===== BATTERY TAB ===== -->
+    <div class="tab-panel" id="panel-battery">
+      <div class="test-section animate-fade-up">
+        <div class="card">
+          <h2>Kiểm tra Pin</h2>
+          <p>Xem thông tin hiện tại của pin (nếu có hoặc còn sống)</p>
+        </div>
+
+        <div id="battery-no-battery" style="display:none" class="card" style="border-color:rgba(245,166,35,0.5)">
+          <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem">
+            <span style="font-size:1.875rem">⚠️</span>
+            <div>
+              <p style="font-size:1rem;font-weight:600;margin-bottom:0.25rem">Không đọc được thông tin pin</p>
+              <p class="text-secondary text-sm">Trình duyệt không nhận diện được pin. Có thể do một trong các nguyên nhân sau:</p>
+            </div>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:0.5rem;margin-left:1rem">
+            <li style="display:flex;gap:0.5rem"><span>🖥️</span><span><strong>Máy bàn (PC)</strong> — không có pin, đang cắm nguồn AC trực tiếp</span></li>
+            <li style="display:flex;gap:0.5rem"><span>🔌</span><span><strong>Laptop đang tháo pin</strong> — đang dùng nguồn AC mà không có pin gắn vào</span></li>
+            <li style="display:flex;gap:0.5rem"><span>🔋</span><span><strong>Pin hỏng hoàn toàn</strong> — laptop nhận nguồn nhưng pin không còn phản hồi</span></li>
+            <li style="display:flex;gap:0.5rem"><span>🔒</span><span><strong>Trình duyệt chặn API</strong> — Chrome desktop đã tắt Battery API vì lý do riêng tư</span></li>
+          </ul>
+        </div>
+
+        <div id="battery-main" style="display:none">
+          <div style="display:flex;flex-direction:column;gap:1rem">
+            <!-- Big bar -->
+            <div class="card">
+              <div class="flex justify-between items-center mb-4">
+                <span class="label-xs" style="margin-bottom:0">Dung lượng hiện tại</span>
+                <div style="display:flex;align-items:center;gap:0.5rem">
+                  <span class="text-sky" style="font-size:0.75rem;letter-spacing:0.08em;text-transform:uppercase" id="bat-charging-label" style="display:none"></span>
+                  <span style="font-size:1.5rem;font-weight:700" id="bat-pct">—%</span>
+                </div>
+              </div>
+              <div class="battery-bar-wrap">
+                <div class="battery-body">
+                  <div class="battery-fill" id="bat-fill" style="width:0%"></div>
+                  <div class="battery-pct" id="bat-pct-label">—%</div>
+                </div>
+                <div class="battery-tip"></div>
+              </div>
+              <div id="bat-charging-row" style="display:none;margin-top:0.75rem;display:flex;align-items:center;gap:0.5rem">
+                <div class="ping-dot"></div>
+                <p class="text-sky text-xs" id="bat-charging-text">Đang sạc</p>
+              </div>
+              <div id="bat-discharging-row" style="display:none;margin-top:0.75rem">
+                <p class="text-dim text-xs" id="bat-discharging-text"></p>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="battery-info-grid">
+              <div class="battery-info-item">
+                <span class="label-xs">Trạng thái</span>
+                <span class="battery-val" id="bat-state">—</span>
+              </div>
+              <div class="battery-info-item">
+                <span class="label-xs">Mức pin</span>
+                <span class="battery-val text-primary" id="bat-level">—</span>
+              </div>
+              <div class="battery-info-item">
+                <span class="label-xs">Thời gian xả ước tính</span>
+                <span class="battery-val text-primary" id="bat-time">—</span>
+              </div>
+            </div>
+
+            <!-- Low battery warning -->
+            <div id="bat-warn" class="warn-box" style="display:none">
+              <p class="text-coral text-sm" id="bat-warn-text"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="battery-no-support" class="card" style="display:none">
+          <p class="text-amber text-sm">⚠️ Trình duyệt không hỗ trợ Battery API</p>
+        </div>
+
+        <div class="border-t" style="border-top:1px solid var(--border-default)"></div>
+
+        <!-- PowerShell section -->
+        <div class="card space-y">
+          <div>
+            <h3 style="font-size:1rem;font-weight:600;margin-bottom:0.25rem">Kiểm tra nhanh độ chai pin của máy tính Windows</h3>
+            <p class="text-secondary text-sm">Chạy lệnh PowerShell bên dưới để xem sức khỏe pin</p>
+          </div>
+          <div class="cmd-box">
+            <code>irm j2c.cc/batterycheck | iex</code>
+            <button class="btn btn-outline" id="copy-cmd-btn" style="font-size:0.625rem;white-space:nowrap">Sao chép</button>
+          </div>
+          <div class="text-secondary text-sm">
+            <span class="label-xs">Cách chạy</span>
+            <div style="display:flex;flex-direction:column;gap:0.5rem">
+              <p>1. Nhấn <kbd>Win</kbd> + <kbd>R</kbd>, gõ <code style="color:var(--accent-sky)">powershell</code> rồi nhấn Enter</p>
+              <p>2. Dán lệnh trên vào cửa sổ PowerShell và nhấn Enter</p>
+              <p>3. Chờ script tải và hiển thị sức khỏe của pin</p>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t">
+            <button class="trouble-toggle" id="trouble-btn">
+              <span id="trouble-icon">▶</span> Gặp lỗi khi chạy lệnh?
+              <span class="line"></span>
+            </button>
+            <div class="trouble-content" id="trouble-content">
+              <div style="display:flex;flex-direction:column;gap:1.5rem;margin-top:1rem">
+                <div>
+                  <p style="font-weight:700;font-size:0.75rem;margin-bottom:0.5rem">1. Nếu lệnh bị chặn do nhà mạng hoặc DNS:</p>
+                  <p class="text-dim text-xs italic mb-2">Sử dụng lệnh này để bỏ qua chặn DNS trước:</p>
+                  <div class="cmd-box cmd-box-sm">
+                    <code>iex (curl.exe -s --doh-url https://1.1.1.1/dns-query j2c.cc/batterycheck | Out-String)</code>
+                    <button class="btn btn-outline" id="copy-trouble1-btn" style="font-size:0.625rem;white-space:nowrap;margin-left:0.5rem">Sao chép</button>
+                  </div>
+                </div>
+                <div>
+                  <p style="font-weight:700;font-size:0.75rem;margin-bottom:0.5rem">2. Nếu gặp lỗi TLS/SSL do Windows cũ:</p>
+                  <p class="text-dim text-xs italic mb-2">Nếu bạn dùng Windows 8.1 hoặc Win 10 bản cũ, hãy chạy lệnh này trước:</p>
+                  <div class="cmd-box cmd-box-sm">
+                    <code>[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12</code>
+                    <button class="btn btn-outline" id="copy-trouble2-btn" style="font-size:0.625rem;white-space:nowrap;margin-left:0.5rem">Sao chép</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer Instructions -->
+  <footer class="main-footer">
+    <!-- Keyboard footer -->
+    <div class="footer-grid tab-footer active" id="footer-keyboard">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Nhấn phím:</strong> Phím trên màn hình sẽ đổi màu khi bạn nhấn phím vật lý tương ứng</p>
+          <p>2. <strong class="sky">Màu sắc:</strong> Màu cam biểu thị phím đang nhấn, màu vàng biểu thị phím đã được nhấn</p>
+          <p>3. <strong class="sky">Bố cục:</strong> Chuyển đổi giữa các bố cục bàn phím khác nhau</p>
+          <p>4. <strong class="sky">Âm thanh:</strong> Bật âm thanh để nghe tiếng gõ phím</p>
+          <p>5. <strong class="sky">Đặt lại:</strong> Xóa toàn bộ phím đã nhấn</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Tại sao cần test bàn phím?</h2>
+        <div class="text-block">
+          <p>Kiểm tra bàn phím giúp bạn phát hiện các phím bị liệt, bị kẹt hoặc hiện tượng ghosting (không nhận tổ hợp phím)</p>
+          <p>Công cụ này hữu ích khi bạn muốn kiểm tra xem bàn phím laptop hoặc bàn phím rời có hoạt động hoàn hảo không</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-mouse" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn kiểm tra lỗi Double Click</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Cách thử:</strong> Click chuột với lực và tốc độ bình thường từng lần một vào ô kiểm tra (khoảng 30 – 100 lần click đơn lẻ).</p>
+          <p>2. <strong class="sky">Dấu hiệu lỗi:</strong> Nếu bạn chỉ nhấn 1 lần duy nhất nhưng hệ thống ghi nhận 2 lần click liên tiếp với khoảng cách cực ngắn (&lt; 80ms) và hiển thị cảnh báo đỏ, chuột của bạn chắc chắn đã bị lỗi Double Click do switch nảy tín hiệu.</p>
+          <p>3. <strong class="sky">Kiểm tra giữ chuột:</strong> Nhấn giữ chuột trái hoặc chuột phải, di chuyển nhẹ trong ô. Nếu bị ngắt quãng hoặc tự nhả click giữa chừng, switch cũng đã bị lỗi tiếp điểm.</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Nguyên nhân & Cách khắc phục</h2>
+        <div class="text-block">
+          <p><strong class="coral">Nguyên nhân:</strong> Lá đồng trong microswitch chuột sau thời gian dài sử dụng bị oxi hóa bề mặt hoặc suy giảm độ đàn hồi, khiến dòng điện đóng ngắt bị nảy (switch bounce), tạo ra 2 xung tín hiệu trong một lần bấm.</p>
+          <p><strong class="amber">Cách khắc phục:</strong> Vệ sinh switch bằng dung dịch chuyên dụng (như Contact Cleaner), thay thế switch mới (Huano, Omron, Kailh GM 8.0, TTC Gold, v.v.), hoặc liên hệ trung tâm bảo hành nếu chuột còn hạn.</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-screen" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Chọn màu:</strong> Nhấp vào ô màu muốn bắt đầu kiểm tra</p>
+          <p>2. <strong class="sky">Bắt đầu:</strong> Nhấn nút "Bắt đầu kiểm tra"</p>
+          <p>3. <strong class="sky">Điều hướng:</strong> Nhấn phím <kbd>←</kbd> <kbd>→</kbd> hoặc click chuột để đổi màu</p>
+          <p>4. <strong class="sky">Thoát:</strong> Nhấn <kbd>ESC</kbd> để thoát khỏi chế độ kiểm tra</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Dead pixel và Stuck pixel</h2>
+        <div class="text-block">
+          <p><strong class="coral">Điểm chết (Dead pixel)</strong> là điểm ảnh hoàn toàn không hoạt động, thường hiển thị dưới dạng chấm đen trên mọi nền màu</p>
+          <p><strong class="amber">Điểm kẹt (Stuck pixel)</strong> là điểm ảnh bị kẹt ở một màu cố định (đỏ, xanh, hoặc trắng) do sub-pixel luôn trong trạng thái bật</p>
+          <p>Hãy quan sát kỹ màn hình khi hiển thị từng màu thuần, tìm các điểm bất thường có màu khác biệt hoặc không đổi màu khi nền chuyển sang màu mới</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-webcam" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Cấp quyền:</strong> Cho phép trình duyệt truy cập camera khi được yêu cầu</p>
+          <p>2. <strong class="sky">Chọn camera:</strong> Chọn camera muốn kiểm tra, hình ảnh trực tiếp sẽ hiện ngay bên dưới</p>
+          <p>3. <strong class="sky">Quét lại:</strong> Nhấn nút "Quét lại" nếu bạn vừa kết nối thêm camera mới</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Tại sao cần test webcam?</h2>
+        <div class="text-block">
+          <p>Kiểm tra webcam giúp bạn xác nhận camera hoạt động bình thường trước khi tham gia cuộc họp trực tuyến hoặc ghi hình</p>
+          <p>Công cụ này cũng hữu ích để kiểm tra chất lượng hình ảnh, góc quay và khả năng nhận diện của từng camera</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-micro" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Cấp quyền:</strong> Cho phép trình duyệt truy cập micro khi được yêu cầu</p>
+          <p>2. <strong class="sky">Chọn micro:</strong> Có thể máy tính có nhiều micro</p>
+          <p>3. <strong class="sky">Âm thanh:</strong> Nói vào micro, thanh màu xanh lá sẽ phản hồi trực tiếp</p>
+          <p>4. <strong class="sky">Âm lượng:</strong> Dùng thanh trượt để tăng/giảm âm lượng khi thu âm</p>
+          <p>5. <strong class="sky">Thu âm:</strong> Nhấn "Thu âm" để ghi lại âm thanh, sau đó nhấn "Dừng thu" và phát lại để nghe</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Tại sao cần test micro?</h2>
+        <div class="text-block">
+          <p>Kiểm tra micro giúp bạn đảm bảo chất lượng âm thanh tốt trước khi tham gia cuộc họp, gọi điện hoặc thu âm</p>
+          <p>Bạn cũng có thể nghe lại và so sánh chất lượng giữa các micro để chọn micro phù hợp nhất</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-speaker" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Âm lượng:</strong> Chỉnh thanh trượt âm lượng trước khi phát</p>
+          <p>2. <strong class="sky">Chọn bài thử:</strong> Nhấn vào từng ô để phát, nhấn lại để dừng</p>
+          <p>3. <strong class="sky">Khảo sát:</strong> Nghe xem có tiếng rè, mất tiếng, hoặc lệch kênh không</p>
+          <p>4. <strong class="sky">Không nghe kênh trái/phải:</strong> Kiểm tra cài đặt âm thanh Stereo trong Windows/macOS</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Cách đọc kết quả</h2>
+        <div class="text-block">
+          <p><strong class="coral">Tiếng rè:</strong> Thường xảy ra ở tần số thấp (Bass) — có thể do màng loa bị hỏng hoặc bụi bám vào</p>
+          <p><strong class="amber">Mất kênh:</strong> Nếu không nghe được kênh trái hoặc phải — kiểm tra cài đặt Stereo trên hệ thống hoặc dây jack 3.5mm</p>
+          <p><strong>Bình thường:</strong> Nghe được rõ tất cả dải tần số và cả hai kênh — loa đang hoạt động tốt</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-battery" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Xem thông tin:</strong> Trang tự động đọc thông tin pin từ trình duyệt (nếu được hỗ trợ)</p>
+          <p>2. <strong class="sky">Kiểm tra nhiều hơn:</strong> Chạy lệnh PowerShell để xem sức khỏe pin trên Windows</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Tại sao cần test pin?</h2>
+        <div class="text-block">
+          <p>Pin laptop theo thời gian sẽ giảm dung lượng</p>
+          <p>Kiểm tra định kỳ giúp bạn biết tình trạng hiện tại của pin thôi chứ lúc nó đột tử thì bạn cũng phải đi thay mới à</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Screen overlay -->
+<div id="screen-overlay">
+  <div class="screen-hint">Click hoặc ← → để đổi màu &nbsp;|&nbsp; ESC để thoát</div>
+</div>
+
+<!-- Back to top -->
+<button id="back-to-top" title="Về đầu trang">↑</button>
+
+<script>
+// ============================================================
+//  KEYBOARD DATA
+// ============================================================
+const ROW_FUNCTION = [
+  { code: 'Escape', label: 'Esc' },
+  { code: 'GAP_1', label: '', w: '44' },
+  { code: 'F1', label: 'F1' }, { code: 'F2', label: 'F2' },
+  { code: 'F3', label: 'F3' }, { code: 'F4', label: 'F4' },
+  { code: 'GAP_2', label: '', w: '20' },
+  { code: 'F5', label: 'F5' }, { code: 'F6', label: 'F6' },
+  { code: 'F7', label: 'F7' }, { code: 'F8', label: 'F8' },
+  { code: 'GAP_3', label: '', w: '20' },
+  { code: 'F9', label: 'F9' }, { code: 'F10', label: 'F10' },
+  { code: 'F11', label: 'F11' }, { code: 'F12', label: 'F12' },
+  { code: 'GAP_4', label: '', w: '24' },
+  { code: 'PrintScreen', label: 'PrtSc', small: true },
+  { code: 'ScrollLock', label: 'ScLk', small: true },
+  { code: 'Pause', label: 'Pause', small: true },
+];
+const ROW_1 = [
+  { code: 'Backquote', label: '`', shift: '~' },
+  { code: 'Digit1', label: '1', shift: '!' }, { code: 'Digit2', label: '2', shift: '@' },
+  { code: 'Digit3', label: '3', shift: '#' }, { code: 'Digit4', label: '4', shift: '$' },
+  { code: 'Digit5', label: '5', shift: '%' }, { code: 'Digit6', label: '6', shift: '^' },
+  { code: 'Digit7', label: '7', shift: '&' }, { code: 'Digit8', label: '8', shift: '*' },
+  { code: 'Digit9', label: '9', shift: '(' }, { code: 'Digit0', label: '0', shift: ')' },
+  { code: 'Minus', label: '-', shift: '_' }, { code: 'Equal', label: '=', shift: '+' },
+  { code: 'Backspace', label: 'Backspace', w: '100', small: true },
+];
+const ROW_2 = [
+  { code: 'Tab', label: 'Tab', w: '68', small: true },
+  { code: 'KeyQ', label: 'Q' }, { code: 'KeyW', label: 'W' }, { code: 'KeyE', label: 'E' },
+  { code: 'KeyR', label: 'R' }, { code: 'KeyT', label: 'T' }, { code: 'KeyY', label: 'Y' },
+  { code: 'KeyU', label: 'U' }, { code: 'KeyI', label: 'I' }, { code: 'KeyO', label: 'O' },
+  { code: 'KeyP', label: 'P' }, { code: 'BracketLeft', label: '[', shift: '{' },
+  { code: 'BracketRight', label: ']', shift: '}' },
+  { code: 'Backslash', label: '\\', shift: '|', w: '72' },
+];
+const ROW_3 = [
+  { code: 'CapsLock', label: 'Caps', w: '84', small: true },
+  { code: 'KeyA', label: 'A' }, { code: 'KeyS', label: 'S' }, { code: 'KeyD', label: 'D' },
+  { code: 'KeyF', label: 'F' }, { code: 'KeyG', label: 'G' }, { code: 'KeyH', label: 'H' },
+  { code: 'KeyJ', label: 'J' }, { code: 'KeyK', label: 'K' }, { code: 'KeyL', label: 'L' },
+  { code: 'Semicolon', label: ';', shift: ':' }, { code: 'Quote', label: "'", shift: '"' },
+  { code: 'Enter', label: 'Enter', w: '105', small: true },
+];
+const ROW_4 = [
+  { code: 'ShiftLeft', label: 'Shift', w: '102', small: true },
+  { code: 'KeyZ', label: 'Z' }, { code: 'KeyX', label: 'X' }, { code: 'KeyC', label: 'C' },
+  { code: 'KeyV', label: 'V' }, { code: 'KeyB', label: 'B' }, { code: 'KeyN', label: 'N' },
+  { code: 'KeyM', label: 'M' }, { code: 'Comma', label: ',', shift: '<' },
+  { code: 'Period', label: '.', shift: '>' }, { code: 'Slash', label: '/', shift: '?' },
+  { code: 'ShiftRight', label: 'Shift', w: '136', small: true },
+];
+const ROW_5_WIN = [
+  { code: 'ControlLeft', label: 'Ctrl', w: '64', small: true },
+  { code: 'MetaLeft', label: 'Win', w: '64', small: true },
+  { code: 'AltLeft', label: 'Alt', w: '64', small: true },
+  { code: 'Space', label: '', w: 'flex1' },
+  { code: 'AltRight', label: 'Alt', w: '64', small: true },
+  { code: 'MetaRight', label: 'Win', w: '64', small: true },
+  { code: 'ContextMenu', label: 'Menu', w: '64', small: true },
+  { code: 'ControlRight', label: 'Ctrl', w: '64', small: true },
+];
+const ROW_5_MAC = [
+  { code: 'ControlLeft', label: 'Ctrl', w: '64', small: true },
+  { code: 'MetaLeft', label: 'Cmd', w: '64', small: true },
+  { code: 'AltLeft', label: 'Opt', w: '64', small: true },
+  { code: 'Space', label: '', w: 'flex1' },
+  { code: 'AltRight', label: 'Opt', w: '64', small: true },
+  { code: 'MetaRight', label: 'Cmd', w: '64', small: true },
+  { code: 'ContextMenu', label: 'Menu', w: '64', small: true },
+  { code: 'ControlRight', label: 'Ctrl', w: '64', small: true },
+];
+const ROW_NAV = [
+  { code: 'Insert', label: 'Ins', small: true }, { code: 'Home', label: 'Home', small: true }, { code: 'PageUp', label: 'PgUp', small: true },
+  { code: 'Delete', label: 'Del', small: true }, { code: 'End', label: 'End', small: true }, { code: 'PageDown', label: 'PgDn', small: true },
+];
+const ARROWS = [
+  { code: 'ArrowUp', label: '↑' },
+  { code: 'ArrowLeft', label: '←' }, { code: 'ArrowDown', label: '↓' }, { code: 'ArrowRight', label: '→' },
+];
+const NUMPAD = [
+  { code: 'NumLock', label: 'Num', ga: '1/1' },
+  { code: 'NumpadDivide', label: '/', ga: '1/2' },
+  { code: 'NumpadMultiply', label: '*', ga: '1/3' },
+  { code: 'NumpadSubtract', label: '-', ga: '1/4' },
+  { code: 'Numpad7', label: '7', ga: '2/1' }, { code: 'Numpad8', label: '8', ga: '2/2' }, { code: 'Numpad9', label: '9', ga: '2/3' },
+  { code: 'NumpadAdd', label: '+', ga: '2/4/4/5', spanV: true },
+  { code: 'Numpad4', label: '4', ga: '3/1' }, { code: 'Numpad5', label: '5', ga: '3/2' }, { code: 'Numpad6', label: '6', ga: '3/3' },
+  { code: 'Numpad1', label: '1', ga: '4/1' }, { code: 'Numpad2', label: '2', ga: '4/2' }, { code: 'Numpad3', label: '3', ga: '4/3' },
+  { code: 'NumpadEnter', label: 'Ent', ga: '4/4/6/5', spanV: true },
+  { code: 'Numpad0', label: '0', ga: '5/1/6/3', spanH: true }, { code: 'NumpadDecimal', label: '.', ga: '5/3' },
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+const keyStates = {}; // code -> 'idle'|'active'|'pressed'
+const mouseStates = { Left: 'idle', Middle: 'idle', Right: 'idle' };
+let pressCount = 0;
+let activeKeys = [];
+let lastKeyCode = '';
+let mostPressed = { code: '', label: '', count: 0 };
+const pressFrequency = {};
+const keyHistory = []; // {code, label, id}
+let historyId = 0;
+let soundEnabled = true;
+let osType = 'Win';
+let layoutSize = '100';
+let audioCtx = null;
+let pressesInCurrentSecond = 0;
+let currentCps = 0;
+let lastPressTime = 0;
+let lastInterval = 0;
+let performanceInterval = null;
+
+// ============================================================
+//  KEYBOARD BUILD
+// ============================================================
+function makeKeyEl(code, label, shift, small, w, spanH, spanV, ga) {
+  if (code.startsWith('GAP')) {
+    const g = document.createElement('div');
+    g.className = 'key key-gap';
+    g.style.width = w + 'px';
+    g.style.border = 'none';
+    g.style.background = 'transparent';
+    return g;
+  }
+  const el = document.createElement('div');
+  el.className = 'key' + (small ? ' key-small' : '');
+  el.dataset.code = code;
+
+  if (w === 'flex1') {
+    el.style.flex = '1';
+  } else if (w) {
+    el.style.width = w + 'px';
+  } else {
+    el.style.width = '3rem';
+  }
+
+  if (spanV) {
+    el.classList.add('key-span-v');
+    el.style.height = '100%';
+    el.style.minHeight = '6.125rem';
+  } else {
+    el.style.height = '3rem';
+  }
+
+  if (spanH) {
+    el.classList.add('key-span-h');
+    el.style.gridColumn = 'span 2';
+    el.style.width = '100%';
+    el.style.minWidth = '6.125rem';
+  }
+
+  if (ga) {
+    // gridArea format: row/col or row/col/endrow/endcol
+    const parts = ga.split('/');
+    if (parts.length === 4) {
+      el.style.gridArea = `${parts[0]} / ${parts[1]} / ${parts[2]} / ${parts[3]}`;
+    } else {
+      el.style.gridRowStart = parts[0];
+      el.style.gridColumnStart = parts[1];
+    }
+  }
+
+  if (shift) {
+    const s = document.createElement('span');
+    s.className = 'shift-label';
+    s.textContent = shift;
+    const m = document.createElement('span');
+    m.className = 'main-label';
+    m.textContent = label;
+    el.appendChild(s);
+    el.appendChild(m);
+  } else {
+    const span = document.createElement('span');
+    span.textContent = label;
+    el.appendChild(span);
+  }
+  return el;
+}
+
+function buildRow(keys) {
+  const row = document.createElement('div');
+  row.className = 'kb-row';
+  keys.forEach(k => {
+    const el = makeKeyEl(k.code, k.label, k.shift, k.small, k.w, k.spanH, k.spanV, k.ga);
+    row.appendChild(el);
+  });
+  return row;
+}
+
+function buildKeyboard() {
+  const layout = document.getElementById('keyboard-layout');
+  layout.innerHTML = '';
+
+  const rows = document.createElement('div');
+  rows.className = 'kb-rows';
+
+  // Function row (hide on 60%)
+  const fnRow = buildRow(ROW_FUNCTION);
+  fnRow.style.marginBottom = '8px';
+  fnRow.dataset.section = 'fn';
+  rows.appendChild(fnRow);
+
+  // Main + nav sections wrapper
+  const sections = document.createElement('div');
+  sections.className = 'kb-sections';
+
+  // Main section
+  const main = document.createElement('div');
+  main.className = 'kb-main-section';
+
+  // Row 1 (with optional Esc on 60%)
+  const row1El = document.createElement('div');
+  row1El.className = 'kb-row';
+  ROW_1.forEach((k, i) => {
+    let code = k.code, label = k.label;
+    if (i === 0 && layoutSize === '60') { code = 'Escape'; label = 'Esc'; }
+    row1El.appendChild(makeKeyEl(code, label, i === 0 && layoutSize === '60' ? undefined : k.shift, k.small, k.w));
+  });
+  main.appendChild(row1El);
+  main.appendChild(buildRow(ROW_2));
+  main.appendChild(buildRow(ROW_3));
+  main.appendChild(buildRow(ROW_4));
+
+  const row5 = osType === 'Mac' ? ROW_5_MAC : ROW_5_WIN;
+  main.appendChild(buildRow(row5));
+  sections.appendChild(main);
+
+  // Nav + Arrows (hide on 60%)
+  const navSection = document.createElement('div');
+  navSection.className = 'kb-nav-section';
+  navSection.dataset.section = 'nav';
+
+  const navGrid = document.createElement('div');
+  navGrid.className = 'kb-nav-grid';
+  ROW_NAV.forEach(k => navGrid.appendChild(makeKeyEl(k.code, k.label, null, k.small)));
+  navSection.appendChild(navGrid);
+
+  const arrowsWrap = document.createElement('div');
+  arrowsWrap.className = 'kb-arrows';
+  const upKey = makeKeyEl(ARROWS[0].code, ARROWS[0].label);
+  arrowsWrap.appendChild(upKey);
+  const arrowRow = document.createElement('div');
+  arrowRow.className = 'kb-arrows-row';
+  ARROWS.slice(1).forEach(k => arrowRow.appendChild(makeKeyEl(k.code, k.label)));
+  arrowsWrap.appendChild(arrowRow);
+  navSection.appendChild(arrowsWrap);
+  sections.appendChild(navSection);
+
+  // Numpad (only 100%)
+  const numpad = document.createElement('div');
+  numpad.className = 'kb-numpad';
+  numpad.dataset.section = 'numpad';
+  NUMPAD.forEach(k => {
+    const el = makeKeyEl(k.code, k.label, null, false, null, k.spanH, k.spanV, k.ga);
+    numpad.appendChild(el);
+  });
+  sections.appendChild(numpad);
+
+  rows.appendChild(sections);
+  layout.appendChild(rows);
+
+  // Apply layout visibility
+  applyLayout();
+  // Update key states display
+  updateAllKeyStyles();
+  // Auto-fit keyboard layout
+  fitKeyboard();
+}
+
+function applyLayout() {
+  const fnRow = document.querySelector('[data-section="fn"]');
+  const navSection = document.querySelector('[data-section="nav"]');
+  const numpad = document.querySelector('[data-section="numpad"]');
+
+  if (fnRow) fnRow.style.display = layoutSize === '60' ? 'none' : 'flex';
+  if (navSection) navSection.style.display = layoutSize === '60' ? 'none' : 'flex';
+  if (numpad) numpad.style.display = layoutSize === '100' ? 'grid' : 'none';
+}
+
+function fitKeyboard() {
+  const container = document.getElementById('kb-container');
+  const inner = document.getElementById('kb-inner');
+  const wrapper = document.getElementById('kb-scale-wrapper');
+  if (!container || !inner || !wrapper) return;
+
+  // Temporarily reset transform to get accurate unscaled bounds
+  wrapper.style.transform = 'none';
+  wrapper.style.width = 'fit-content';
+  wrapper.style.height = 'auto';
+
+  const containerStyle = window.getComputedStyle(container);
+  const padLeft = parseFloat(containerStyle.paddingLeft) || 16;
+  const padRight = parseFloat(containerStyle.paddingRight) || 16;
+  const availWidth = Math.max(0, container.clientWidth - padLeft - padRight);
+
+  const naturalWidth = inner.offsetWidth;
+  const naturalHeight = inner.offsetHeight;
+
+  if (naturalWidth > 0 && availWidth > 0) {
+    if (availWidth < naturalWidth) {
+      const scale = Math.max(0.4, Math.min(1, (availWidth - 4) / naturalWidth));
+      wrapper.style.transform = `scale(${scale})`;
+      wrapper.style.transformOrigin = 'top center';
+      wrapper.style.width = `${naturalWidth}px`;
+      wrapper.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+    } else {
+      wrapper.style.transform = 'none';
+      wrapper.style.width = 'auto';
+      wrapper.style.height = 'auto';
+    }
+  }
+}
+
+function updateAllKeyStyles() {
+  document.querySelectorAll('.key[data-code]').forEach(el => {
+    const code = el.dataset.code;
+    const state = keyStates[code] || 'idle';
+    el.classList.remove('key-active', 'key-pressed');
+    if (state === 'active') el.classList.add('key-active');
+    else if (state === 'pressed') el.classList.add('key-pressed');
+  });
+  // Mouse
+  ['Left', 'Middle', 'Right'].forEach(btn => {
+    const el = document.getElementById('mouse-' + btn.toLowerCase());
+    if (!el) return;
+    el.classList.remove('key-active', 'key-pressed');
+    const s = mouseStates[btn];
+    if (s === 'active') el.classList.add('key-active');
+    else if (s === 'pressed') el.classList.add('key-pressed');
+  });
+}
+
+function updateKeyStyle(code) {
+  document.querySelectorAll(`.key[data-code="${code}"]`).forEach(el => {
+    el.classList.remove('key-active', 'key-pressed');
+    const state = keyStates[code] || 'idle';
+    if (state === 'active') el.classList.add('key-active');
+    else if (state === 'pressed') el.classList.add('key-pressed');
+  });
+}
+
+// ============================================================
+//  SOUND
+// ============================================================
+function playClick() {
+  if (!soundEnabled) return;
+  try {
+    if (!audioCtx) {
+      const ACtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new ACtx();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.03);
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.03);
+    osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.03);
+  } catch (e) { /* ignore */ }
+}
+
+// ============================================================
+//  KEYBOARD EVENTS
+// ============================================================
+function handleKeyDown(e) {
+  // Don't capture keys when in screen test mode (except handled there)
+  if (document.getElementById('screen-overlay').classList.contains('active')) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+  const code = e.code;
+  lastKeyCode = code;
+
+  if (keyStates[code] !== 'active') {
+    playClick();
+    keyStates[code] = 'active';
+    if (!activeKeys.includes(code)) activeKeys.push(code);
+
+    const label = e.key === ' ' ? 'Space' : e.key;
+    keyHistory.unshift({ code, label, id: historyId++ });
+    if (keyHistory.length > 25) keyHistory.pop();
+
+    pressesInCurrentSecond++;
+    pressCount++;
+    pressFrequency[code] = (pressFrequency[code] || 0) + 1;
+
+    if (pressFrequency[code] > mostPressed.count) {
+      mostPressed = { code, label, count: pressFrequency[code] };
+    }
+
+    const now = performance.now();
+    if (lastPressTime > 0) lastInterval = +(now - lastPressTime).toFixed(1);
+    lastPressTime = now;
+
+    updateKeyStyle(code);
+    updateHistory();
+    updateStats();
+  }
+}
+
+function handleKeyUp(e) {
+  if (document.getElementById('screen-overlay').classList.contains('active')) return;
+  const code = e.code;
+  keyStates[code] = 'pressed';
+  activeKeys = activeKeys.filter(k => k !== code);
+  updateKeyStyle(code);
+  updateStats();
+}
+
+function updateHistory() {
+  const placeholder = document.getElementById('history-placeholder');
+  const items = document.getElementById('history-items');
+  const count = document.getElementById('history-count');
+
+  count.textContent = pressCount + ' phím';
+
+  if (keyHistory.length === 0) {
+    placeholder.style.display = '';
+    items.style.display = 'none';
+    return;
+  }
+  placeholder.style.display = 'none';
+  items.style.display = 'flex';
+  items.innerHTML = '';
+  keyHistory.forEach(k => {
+    const chip = document.createElement('div');
+    chip.className = 'history-chip animate-fade-in';
+    chip.textContent = k.label;
+    items.appendChild(chip);
+  });
+}
+
+function updateStats() {
+  document.getElementById('stat-active').textContent = activeKeys.length;
+  document.getElementById('stat-total').textContent = pressCount;
+  const mostDisplay = mostPressed.code ? `${mostPressed.label || mostPressed.code} (${mostPressed.count})` : '-';
+  document.getElementById('stat-most').textContent = mostDisplay;
+  document.getElementById('stat-last').textContent = lastKeyCode || '-';
+  const hz = lastInterval ? Math.round(1000 / lastInterval) : 0;
+  document.getElementById('stat-scan').textContent = hz + ' Hz';
+  document.getElementById('stat-interval').textContent = lastInterval + ' ms';
+  document.getElementById('stat-cps').textContent = currentCps;
+  document.getElementById('stat-apm').textContent = currentCps * 60;
+}
+
+function resetKeyboard() {
+  Object.keys(keyStates).forEach(k => { keyStates[k] = 'idle'; });
+  mouseStates.Left = mouseStates.Middle = mouseStates.Right = 'idle';
+  pressCount = 0; activeKeys = []; lastKeyCode = '';
+  mostPressed = { code: '', label: '', count: 0 };
+  Object.keys(pressFrequency).forEach(k => { delete pressFrequency[k]; });
+  keyHistory.length = 0; historyId = 0;
+  pressesInCurrentSecond = 0; currentCps = 0;
+  lastInterval = 0; lastPressTime = 0;
+  updateAllKeyStyles();
+  updateHistory();
+  updateStats();
+}
+
+// Mouse detection
+window.addEventListener('mousedown', e => {
+  const btn = e.button === 0 ? 'Left' : e.button === 1 ? 'Middle' : 'Right';
+  mouseStates[btn] = 'active';
+  const el = document.getElementById('mouse-' + btn.toLowerCase());
+  if (el) { el.classList.remove('key-active','key-pressed'); el.classList.add('key-active'); }
+});
+window.addEventListener('mouseup', e => {
+  const btn = e.button === 0 ? 'Left' : e.button === 1 ? 'Middle' : 'Right';
+  mouseStates[btn] = 'pressed';
+  const el = document.getElementById('mouse-' + btn.toLowerCase());
+  if (el) { el.classList.remove('key-active','key-pressed'); el.classList.add('key-pressed'); }
+});
+window.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('blur', () => {
+  activeKeys.forEach(code => { keyStates[code] = 'pressed'; });
+  activeKeys = [];
+  updateAllKeyStyles();
+  updateStats();
+});
+
+// ============================================================
+//  MOUSE & DOUBLE CLICK TESTER
+// ============================================================
+let mouseInitialized = false;
+let mouseThreshold = 80; // ms
+let mouseSoundEnabled = true;
+const lastDownTime = { 0: 0, 1: 0, 2: 0 }; // 0: Left, 1: Middle, 2: Right
+const clickCounts = { 0: 0, 1: 0, 2: 0 };
+const doubleClickCounts = { 0: 0, 1: 0, 2: 0 };
+let scrollCount = 0;
+let fastestInterval = Infinity;
+let lastIntervalRecord = 0;
+const mouseHistory = []; // max 30 items
+let holdTimer = null;
+let isHolding = false;
+let holdButton = null;
+let holdStartTime = 0;
+
+const btnNames = { 0: 'Chuột trái (Left)', 1: 'Chuột giữa (Middle)', 2: 'Chuột phải (Right)' };
+
+function playMouseClickSound() {
+  if (!mouseSoundEnabled) return;
+  try {
+    if (!audioCtx) {
+      const ACtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new ACtx();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.025);
+    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.025);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.025);
+  } catch (e) {}
+}
+
+function playMouseDoubleAlertSound() {
+  if (!mouseSoundEnabled) return;
+  try {
+    if (!audioCtx) {
+      const ACtx = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new ACtx();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(920, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(460, audioCtx.currentTime + 0.07);
+    gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.18);
+  } catch (e) {}
+}
+
+function processMouseClick(e, expectedBtn) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const btn = e.button; // 0: Left, 1: Middle, 2: Right
+  if (btn !== 0 && btn !== 1 && btn !== 2) return;
+
+  const now = performance.now();
+
+  // Guard against synthetic duplicate events within < 10ms on the same button
+  if (lastDownTime[btn] > 0 && (now - lastDownTime[btn]) < 10) {
+    return;
+  }
+
+  const liveStatus = document.getElementById('mouse-pad-live-status');
+
+  // Check if user clicked a mismatched button on a specific card
+  if (expectedBtn !== null && expectedBtn !== btn) {
+    const cardEl = document.getElementById(expectedBtn === 0 ? 'mcb-left' : expectedBtn === 1 ? 'mcb-middle' : 'mcb-right');
+    if (cardEl) {
+      cardEl.classList.add('card-warning-nudge');
+      setTimeout(() => cardEl.classList.remove('card-warning-nudge'), 450);
+    }
+    if (liveStatus) {
+      if (expectedBtn === 1) {
+        liveStatus.innerHTML = `<span style="color:var(--accent-amber); font-weight:600;">💡 Bạn đang click ${btnNames[btn]} vào ô Chuột giữa. Hãy <u>NHẤN BÁNH XE CON LĂN XUỐNG</u> (Middle Click) hoặc cuộn bánh xe để kiểm tra ô này. (Hoặc dùng ô lớn phía trên để click tự do).</span>`;
+      } else {
+        liveStatus.innerHTML = `<span style="color:var(--accent-amber); font-weight:600;">💡 Bạn đang click ${btnNames[btn]} vào ô ${btnNames[expectedBtn]}. Vui lòng click đúng phím tương ứng của ô đó.</span>`;
+      }
+    }
+    return;
+  }
+
+  clickCounts[btn]++;
+
+  let interval = 0;
+  let isDouble = false;
+
+  if (lastDownTime[btn] > 0) {
+    interval = +(now - lastDownTime[btn]).toFixed(1);
+    lastIntervalRecord = interval;
+    if (interval < fastestInterval && interval >= 10) fastestInterval = interval;
+
+    // Genuine double-click switch fault: interval between 10ms and mouseThreshold
+    if (interval >= 10 && interval <= mouseThreshold) {
+      isDouble = true;
+      doubleClickCounts[btn]++;
+    }
+  }
+  lastDownTime[btn] = now;
+
+  if (isDouble) {
+    playMouseDoubleAlertSound();
+  } else {
+    playMouseClickSound();
+  }
+
+  // Visual cues on pad and cards
+  const pad = document.getElementById('mouse-click-pad');
+  const cardBtn = document.getElementById(btn === 0 ? 'mcb-left' : btn === 1 ? 'mcb-middle' : 'mcb-right');
+
+  if (pad) {
+    pad.classList.remove('active-btn-0', 'active-btn-1', 'active-btn-2', 'has-error');
+    pad.classList.add('active-btn-' + btn);
+    if (isDouble) {
+      pad.classList.add('has-error');
+      setTimeout(() => pad.classList.remove('has-error'), 400);
+    }
+  }
+
+  if (cardBtn) {
+    cardBtn.classList.add('active');
+    if (isDouble) {
+      cardBtn.classList.add('has-error');
+      setTimeout(() => cardBtn.classList.remove('has-error'), 600);
+    }
+    setTimeout(() => cardBtn.classList.remove('active'), 120);
+  }
+
+  if (liveStatus) {
+    if (isDouble) {
+      liveStatus.innerHTML = `<span style="color:var(--red-500)">⚠️ PHÁT HIỆN LỖI DOUBLE CLICK! ${btnNames[btn]}: ${interval} ms (&le; ${mouseThreshold} ms)</span>`;
+    } else if (interval > 0) {
+      const intervalText = interval > 2000 ? '> 2000 ms' : interval + ' ms';
+      liveStatus.innerHTML = `<span style="color:var(--green-500)">✓ Click hợp lệ: ${intervalText} (${btnNames[btn]})</span>`;
+    } else {
+      liveStatus.innerHTML = `<span style="color:var(--text-secondary)">Click đầu tiên (${btnNames[btn]})</span>`;
+    }
+  }
+
+  // Start hold tracking
+  isHolding = true;
+  holdButton = btn;
+  holdStartTime = now;
+  clearInterval(holdTimer);
+  holdTimer = setInterval(() => {
+    if (isHolding && liveStatus) {
+      const holdDuration = ((performance.now() - holdStartTime) / 1000).toFixed(1);
+      liveStatus.innerHTML = `<span style="color:var(--accent-sky)">Đang giữ ${btnNames[btn]}... (${holdDuration}s) - Tiếp tục giữ để thử nghiệm tuột click</span>`;
+    }
+  }, 100);
+
+  // History log
+  const nowObj = new Date();
+  const timeStr = `${String(nowObj.getHours()).padStart(2, '0')}:${String(nowObj.getMinutes()).padStart(2, '0')}:${String(nowObj.getSeconds()).padStart(2, '0')}.${String(Math.floor(nowObj.getMilliseconds() / 10)).padStart(2, '0')}`;
+  const intervalDisplay = interval > 0 ? (interval > 2000 ? '> 2000 ms' : interval + ' ms') : 'Click đầu';
+  mouseHistory.unshift({
+    btnName: btnNames[btn],
+    interval: intervalDisplay,
+    isDouble,
+    time: timeStr
+  });
+  if (mouseHistory.length > 30) mouseHistory.pop();
+
+  updateMouseUI(isDouble, btn, interval);
+}
+
+function handleMousePadDown(e) {
+  processMouseClick(e, null);
+}
+
+function handleMousePadUp(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  isHolding = false;
+  clearInterval(holdTimer);
+  const pad = document.getElementById('mouse-click-pad');
+  if (pad) {
+    pad.classList.remove('active-btn-0', 'active-btn-1', 'active-btn-2');
+  }
+  ['mcb-left', 'mcb-middle', 'mcb-right'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+}
+
+function handleMousePadWheel(e) {
+  e.preventDefault();
+  scrollCount++;
+  const wheelText = document.getElementById('m-stat-wheel-text');
+  if (wheelText) {
+    const dir = e.deltaY < 0 ? 'Lên ↑' : 'Xuống ↓';
+    wheelText.textContent = `Cuộn: ${scrollCount} (${dir})`;
+  }
+  const mcb = document.getElementById('mcb-middle');
+  if (mcb) {
+    mcb.classList.add('active');
+    setTimeout(() => mcb.classList.remove('active'), 120);
+  }
+}
+
+function updateMouseUI(lastWasDouble, btn, interval) {
+  document.getElementById('m-stat-l-clicks').textContent = clickCounts[0];
+  document.getElementById('m-stat-m-clicks').textContent = clickCounts[1];
+  document.getElementById('m-stat-r-clicks').textContent = clickCounts[2];
+
+  const totalClicks = clickCounts[0] + clickCounts[1] + clickCounts[2];
+  const totalErrors = doubleClickCounts[0] + doubleClickCounts[1] + doubleClickCounts[2];
+
+  document.getElementById('m-stat-total-clicks').textContent = totalClicks;
+  const totalErrEl = document.getElementById('m-stat-total-errors');
+  totalErrEl.textContent = totalErrors;
+  totalErrEl.style.color = totalErrors > 0 ? 'var(--red-500)' : 'var(--green-500)';
+
+  document.getElementById('m-stat-last-interval').textContent = lastIntervalRecord > 0 ? (lastIntervalRecord > 2000 ? '> 2000 ms' : lastIntervalRecord + ' ms') : '-';
+  document.getElementById('m-stat-min-interval').textContent = (fastestInterval < Infinity && fastestInterval >= 10) ? fastestInterval + ' ms' : '-';
+
+  const errL = document.getElementById('m-err-badge-l');
+  if (errL) {
+    if (doubleClickCounts[0] > 0) {
+      errL.style.display = 'inline-block';
+      errL.textContent = `⚠️ ${doubleClickCounts[0]} lỗi Double Click`;
+    } else {
+      errL.style.display = 'none';
+    }
+  }
+  const errM = document.getElementById('m-err-badge-m');
+  if (errM) {
+    if (doubleClickCounts[1] > 0) {
+      errM.style.display = 'inline-block';
+      errM.textContent = `⚠️ ${doubleClickCounts[1]} lỗi Double Click`;
+    } else {
+      errM.style.display = 'none';
+    }
+  }
+  const errR = document.getElementById('m-err-badge-r');
+  if (errR) {
+    if (doubleClickCounts[2] > 0) {
+      errR.style.display = 'inline-block';
+      errR.textContent = `⚠️ ${doubleClickCounts[2]} lỗi Double Click`;
+    } else {
+      errR.style.display = 'none';
+    }
+  }
+
+  const banner = document.getElementById('mouse-status-banner');
+  const bannerText = document.getElementById('mouse-status-text');
+  if (banner && bannerText) {
+    if (totalErrors > 0) {
+      banner.className = 'mouse-alert-box error';
+      bannerText.innerHTML = `<strong>⚠️ CẢNH BÁO LỖI:</strong> Phát hiện tổng cộng <strong>${totalErrors} lần Double Click</strong>! Lần gần nhất trên <strong>${btnNames[btn]}</strong> với khoảng cách chỉ <strong>${interval} ms</strong> (&le; ${mouseThreshold} ms). Switch có khả năng cao đã bị nảy tiếp điểm.`;
+    } else {
+      banner.className = 'mouse-alert-box normal';
+      bannerText.innerHTML = `<strong>✅ Bình thường:</strong> Đã kiểm tra ${totalClicks} lần click mà chưa phát hiện lỗi double click nào (ngưỡng: &le; ${mouseThreshold} ms).`;
+    }
+  }
+
+  const tbody = document.getElementById('mouse-history-tbody');
+  const histCount = document.getElementById('m-history-count');
+  if (tbody) {
+    if (mouseHistory.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-dim); padding: 1.5rem;">Chưa có dữ liệu click. Hãy click vào ô kiểm tra bên trên.</td></tr>';
+    } else {
+      tbody.innerHTML = mouseHistory.map(item => `
+        <tr class="${item.isDouble ? 'error-row' : ''}">
+          <td>${item.time}</td>
+          <td>${item.btnName}</td>
+          <td>${item.interval}</td>
+          <td>${item.isDouble ? '<span style="color:var(--red-500); font-weight:700;">❌ LỖI DOUBLE CLICK</span>' : '<span style="color:var(--green-500)">✅ Hợp lệ</span>'}</td>
+        </tr>
+      `).join('');
+    }
+  }
+  if (histCount) histCount.textContent = `${mouseHistory.length} sự kiện`;
+}
+
+function resetMouseTest() {
+  lastDownTime[0] = lastDownTime[1] = lastDownTime[2] = 0;
+  clickCounts[0] = clickCounts[1] = clickCounts[2] = 0;
+  doubleClickCounts[0] = doubleClickCounts[1] = doubleClickCounts[2] = 0;
+  scrollCount = 0;
+  fastestInterval = Infinity;
+  lastIntervalRecord = 0;
+  mouseHistory.length = 0;
+  isHolding = false;
+  clearInterval(holdTimer);
+
+  const liveStatus = document.getElementById('mouse-pad-live-status');
+  if (liveStatus) liveStatus.textContent = '';
+  const wheelText = document.getElementById('m-stat-wheel-text');
+  if (wheelText) wheelText.textContent = 'Cuộn: 0';
+
+  const banner = document.getElementById('mouse-status-banner');
+  const bannerText = document.getElementById('mouse-status-text');
+  if (banner && bannerText) {
+    banner.className = 'mouse-alert-box normal';
+    bannerText.textContent = 'Chưa phát hiện lỗi double click. Hãy click nhiều lần với tốc độ thông thường vào vùng kiểm tra bên dưới.';
+  }
+
+  updateMouseUI(false, 0, 0);
+}
+
+function initMouseTest() {
+  if (mouseInitialized) return;
+  mouseInitialized = true;
+
+  const pad = document.getElementById('mouse-click-pad');
+  if (pad) {
+    pad.addEventListener('mousedown', handleMousePadDown);
+    pad.addEventListener('mouseup', handleMousePadUp);
+    pad.addEventListener('wheel', handleMousePadWheel, { passive: false });
+    pad.addEventListener('contextmenu', e => e.preventDefault());
+    pad.addEventListener('auxclick', e => e.preventDefault());
+  }
+
+  // Visual card clicks
+  const cardConfigs = [
+    { id: 'mcb-left', expected: 0 },
+    { id: 'mcb-middle', expected: 1 },
+    { id: 'mcb-right', expected: 2 }
+  ];
+  cardConfigs.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (el) {
+      el.addEventListener('mousedown', e => {
+        processMouseClick(e, cfg.expected);
+      });
+      el.addEventListener('mouseup', handleMousePadUp);
+      el.addEventListener('wheel', handleMousePadWheel, { passive: false });
+      el.addEventListener('contextmenu', e => e.preventDefault());
+      el.addEventListener('auxclick', e => e.preventDefault());
+    }
+  });
+
+  // Threshold buttons
+  const threshBtns = document.getElementById('mouse-threshold-btns');
+  if (threshBtns) {
+    threshBtns.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      mouseThreshold = parseInt(btn.dataset.threshold, 10) || 80;
+      threshBtns.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+      const liveStatus = document.getElementById('mouse-pad-live-status');
+      if (liveStatus) liveStatus.innerHTML = `<span style="color:var(--accent-amber)">Đã đổi ngưỡng phát hiện sang: ${mouseThreshold} ms</span>`;
+    });
+  }
+
+  // Sound button
+  const soundBtn = document.getElementById('mouse-sound-btn');
+  if (soundBtn) {
+    soundBtn.addEventListener('click', () => {
+      mouseSoundEnabled = !mouseSoundEnabled;
+      soundBtn.textContent = mouseSoundEnabled ? 'BẬT' : 'TẮT';
+      soundBtn.className = mouseSoundEnabled ? 'btn btn-green' : 'btn btn-outline';
+    });
+  }
+
+  // Reset button
+  const resetBtn = document.getElementById('mouse-reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetMouseTest);
+  }
+}
+
+// ============================================================
+//  TAB NAVIGATION
+// ============================================================
+let currentTab = 'keyboard';
+
+function switchTab(tab) {
+  // Stop webcam / mic when switching away
+  if (currentTab === 'webcam' && tab !== 'webcam') stopCam();
+  if (currentTab === 'micro' && tab !== 'micro') stopMic();
+
+  currentTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('#tab-nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Footer
+  document.querySelectorAll('.tab-footer').forEach(f => f.style.display = 'none');
+  const footer = document.getElementById('footer-' + tab);
+  if (footer) footer.style.display = 'grid';
+
+  // Init if needed
+  if (tab === 'keyboard') requestAnimationFrame(fitKeyboard);
+  if (tab === 'mouse' && !mouseInitialized) { mouseInitialized = true; initMouseTest(); }
+  if (tab === 'webcam' && !camInitialized) { camInitialized = true; initCam(); }
+  if (tab === 'micro' && !micInitialized) { micInitialized = true; initMic(); }
+  if (tab === 'battery' && !battInitialized) { battInitialized = true; initBattery(); }
+  if (tab === 'speaker') initTracks();
+}
+
+document.getElementById('tab-nav').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (btn) switchTab(btn.dataset.tab);
+});
+
+const btnGotoMouse = document.getElementById('btn-goto-mouse-tab');
+if (btnGotoMouse) {
+  btnGotoMouse.addEventListener('click', () => switchTab('mouse'));
+}
+
+// ============================================================
+//  KEYBOARD TOOLBAR
+// ============================================================
+document.getElementById('layout-btns').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  layoutSize = btn.dataset.layout;
+  document.querySelectorAll('#layout-btns button').forEach(b => b.classList.toggle('active', b === btn));
+  buildKeyboard();
+});
+document.getElementById('os-btns').addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  osType = btn.dataset.os;
+  document.querySelectorAll('#os-btns button').forEach(b => b.classList.toggle('active', b === btn));
+  buildKeyboard();
+});
+document.getElementById('sound-btn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('sound-btn');
+  btn.textContent = soundEnabled ? 'BẬT' : 'TẮT';
+  btn.className = soundEnabled ? 'btn btn-green' : 'btn btn-outline';
+});
+document.getElementById('reset-btn').addEventListener('click', resetKeyboard);
+
+window.addEventListener('keydown', handleKeyDown);
+window.addEventListener('keyup', handleKeyUp);
+
+performanceInterval = setInterval(() => {
+  currentCps = pressesInCurrentSecond;
+  pressesInCurrentSecond = 0;
+  updateStats();
+}, 1000);
+
+// ============================================================
+//  SCREEN TEST
+// ============================================================
+const screenColors = [
+  { name: 'Đen', value: '#000000' },
+  { name: 'Trắng', value: '#ffffff' },
+  { name: 'Đỏ', value: '#ff0000' },
+  { name: 'Xanh lá', value: '#00ff00' },
+  { name: 'Xanh dương', value: '#0000ff' },
+];
+let screenIdx = 0;
+let screenBrightness = 100;
+let screenActive = false;
+
+const colorGrid = document.getElementById('color-grid');
+screenColors.forEach((c, i) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'color-swatch-wrap';
+  const swatch = document.createElement('div');
+  swatch.className = 'color-swatch' + (i === 0 ? ' selected' : '');
+  swatch.style.backgroundColor = c.value;
+  const name = document.createElement('span');
+  name.className = 'color-name' + (i === 0 ? ' selected' : '');
+  name.textContent = c.name;
+  wrap.appendChild(swatch);
+  wrap.appendChild(name);
+  wrap.addEventListener('click', () => {
+    screenIdx = i;
+    document.querySelectorAll('.color-swatch').forEach((s,j) => s.classList.toggle('selected', j===i));
+    document.querySelectorAll('.color-name').forEach((n,j) => n.classList.toggle('selected', j===i));
+    if (screenActive) applyScreenColor();
+  });
+  colorGrid.appendChild(wrap);
+});
+
+const brightnessSlider = document.getElementById('brightness-slider');
+brightnessSlider.addEventListener('input', () => {
+  screenBrightness = +brightnessSlider.value;
+  document.getElementById('brightness-val').textContent = screenBrightness + '%';
+  if (screenActive) applyScreenColor();
+});
+
+function applyScreenColor() {
+  const overlay = document.getElementById('screen-overlay');
+  const c = screenColors[screenIdx];
+  overlay.style.backgroundColor = c.value;
+  overlay.style.filter = `brightness(${screenBrightness/100})`;
+}
+
+function startScreen() {
+  screenActive = true;
+  const overlay = document.getElementById('screen-overlay');
+  applyScreenColor();
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  document.documentElement.requestFullscreen().catch(() => {});
+}
+function exitScreen() {
+  screenActive = false;
+  document.getElementById('screen-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+}
+
+document.getElementById('start-screen-btn').addEventListener('click', startScreen);
+document.getElementById('screen-overlay').addEventListener('click', () => {
+  screenIdx = (screenIdx + 1) % screenColors.length;
+  applyScreenColor();
+  document.querySelectorAll('.color-swatch').forEach((s,j) => s.classList.toggle('selected', j===screenIdx));
+  document.querySelectorAll('.color-name').forEach((n,j) => n.classList.toggle('selected', j===screenIdx));
+});
+
+window.addEventListener('keydown', e => {
+  if (!screenActive) return;
+  if (e.key === 'ArrowRight') { screenIdx=(screenIdx+1)%screenColors.length; applyScreenColor(); }
+  if (e.key === 'ArrowLeft') { screenIdx=(screenIdx-1+screenColors.length)%screenColors.length; applyScreenColor(); }
+  if (e.key === 'Escape') exitScreen();
+}, true);
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && screenActive) exitScreen();
+});
+
+// ============================================================
+//  WEBCAM TEST
+// ============================================================
+let camInitialized = false;
+let camStream = null;
+let camList = [];
+let camRequestId = 0;
+let camMounted = true;
+
+function showCamLoading() {
+  document.getElementById('cam-loading').style.display = 'flex';
+  document.getElementById('cam-error-box').style.display = 'none';
+  document.getElementById('cam-content').style.display = 'none';
+}
+function showCamError(msg) {
+  document.getElementById('cam-loading').style.display = 'none';
+  document.getElementById('cam-error-box').style.display = 'flex';
+  document.getElementById('cam-content').style.display = 'none';
+  document.getElementById('cam-error-msg').textContent = msg;
+}
+function showCamContent() {
+  document.getElementById('cam-loading').style.display = 'none';
+  document.getElementById('cam-error-box').style.display = 'none';
+  document.getElementById('cam-content').style.display = 'block';
+}
+function setCamDot(on) {
+  const dot = document.getElementById('cam-dot');
+  dot.className = 'status-dot ' + (on ? 'on' : 'off');
+  document.getElementById('cam-status-text').textContent = on ? 'Đang hoạt động' : 'Lỗi';
+}
+
+async function initCam() {
+  showCamLoading();
+  try {
+    const init = await navigator.mediaDevices.getUserMedia({ video: true });
+    init.getTracks().forEach(t => t.stop());
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const vids = devices.filter(d => d.kind === 'videoinput');
+    if (vids.length === 0) { showCamError('Không tìm thấy camera nào trên thiết bị này'); return; }
+    camList = vids.map((d,i) => ({ deviceId: d.deviceId, label: d.label || `Camera ${i+1}` }));
+    buildCamSelect();
+    showCamContent();
+    openCam(camList[0].deviceId);
+  } catch {
+    showCamError('Không thể truy cập camera. Vui lòng cấp quyền camera trong trình duyệt');
+  }
+}
+
+function buildCamSelect() {
+  const sel = document.getElementById('cam-select');
+  sel.innerHTML = '';
+  camList.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.deviceId;
+    opt.textContent = c.label;
+    sel.appendChild(opt);
+  });
+}
+
+async function openCam(deviceId) {
+  const rId = ++camRequestId;
+  stopCam();
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } } });
+    if (rId !== camRequestId || !camMounted) { s.getTracks().forEach(t => t.stop()); return; }
+    camStream = s;
+    const vid = document.getElementById('cam-video');
+    vid.srcObject = s;
+    vid.style.display = 'block';
+    document.getElementById('cam-no-video').style.display = 'none';
+    setCamDot(true);
+    const label = camList.find(c => c.deviceId === deviceId)?.label || 'Camera';
+    document.getElementById('cam-label').textContent = label;
+  } catch {
+    if (rId === camRequestId) {
+      setCamDot(false);
+      document.getElementById('cam-no-video').style.display = '';
+      document.getElementById('cam-no-video').textContent = 'Không thể mở camera này';
+    }
+  }
+}
+
+function stopCam() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  const vid = document.getElementById('cam-video');
+  if (vid) { vid.srcObject = null; vid.style.display = 'none'; }
+  const nv = document.getElementById('cam-no-video');
+  if (nv) { nv.style.display = ''; nv.textContent = 'Không thể mở camera'; }
+  setCamDot(false);
+}
+
+document.getElementById('cam-select').addEventListener('change', e => openCam(e.target.value));
+document.getElementById('cam-rescan-btn').addEventListener('click', () => { stopCam(); initCam(); });
+document.getElementById('cam-retry-btn').addEventListener('click', initCam);
+
+// ============================================================
+//  MIC TEST
+// ============================================================
+let micInitialized = false;
+let micStream = null;
+let micList = [];
+let micRequestId = 0;
+let micMounted = true;
+let micAudioCtx = null;
+let micGainNode = null;
+let micAnalyser = null;
+let micAnimId = null;
+let micRecorder = null;
+let micChunks = [];
+let micRecording = false;
+
+function showMicLoading() {
+  document.getElementById('mic-loading').style.display = 'flex';
+  document.getElementById('mic-error-box').style.display = 'none';
+  document.getElementById('mic-content').style.display = 'none';
+}
+function showMicError(msg) {
+  document.getElementById('mic-loading').style.display = 'none';
+  document.getElementById('mic-error-box').style.display = 'flex';
+  document.getElementById('mic-content').style.display = 'none';
+  document.getElementById('mic-error-msg').textContent = msg;
+}
+function showMicContent() {
+  document.getElementById('mic-loading').style.display = 'none';
+  document.getElementById('mic-error-box').style.display = 'none';
+  document.getElementById('mic-content').style.display = 'block';
+}
+function setMicDot(on) {
+  document.getElementById('mic-dot').className = 'status-dot ' + (on ? 'on' : 'off');
+  document.getElementById('mic-status-text').textContent = on ? 'Đang hoạt động' : 'Lỗi';
+}
+
+async function initMic() {
+  showMicLoading();
+  try {
+    const init = await navigator.mediaDevices.getUserMedia({ audio: true });
+    init.getTracks().forEach(t => t.stop());
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const auds = devices.filter(d => d.kind === 'audioinput');
+    if (auds.length === 0) { showMicError('Không tìm thấy micro nào trên thiết bị này'); return; }
+    micList = auds.map((d,i) => ({ deviceId: d.deviceId, label: d.label || `Micro ${i+1}` }));
+    buildMicSelect();
+    showMicContent();
+    const def = micList.find(m => m.label.toLowerCase().includes('default') || m.deviceId === 'default') || micList[0];
+    document.getElementById('mic-select').value = def.deviceId;
+    openMic(def.deviceId);
+  } catch {
+    showMicError('Không thể truy cập micro. Vui lòng cấp quyền micro trong trình duyệt');
+  }
+}
+
+function buildMicSelect() {
+  const sel = document.getElementById('mic-select');
+  sel.innerHTML = '';
+  micList.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.deviceId;
+    opt.textContent = m.label;
+    sel.appendChild(opt);
+  });
+}
+
+async function openMic(deviceId) {
+  const rId = ++micRequestId;
+  stopMic();
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
+    if (rId !== micRequestId || !micMounted) { s.getTracks().forEach(t => t.stop()); return; }
+    micStream = s;
+    micAudioCtx = new AudioContext();
+    const source = micAudioCtx.createMediaStreamSource(s);
+    micGainNode = micAudioCtx.createGain();
+    micGainNode.gain.value = +document.getElementById('mic-gain-slider').value / 100;
+    const analyser = micAudioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(micGainNode);
+    micGainNode.connect(analyser);
+    micAnalyser = analyser;
+    setMicDot(true);
+    const label = micList.find(m => m.deviceId === deviceId)?.label || 'Micro';
+    document.getElementById('mic-label').textContent = label;
+    document.getElementById('mic-error-inline').style.display = 'none';
+    document.getElementById('mic-active-content').style.display = 'block';
+    startVolMonitor();
+  } catch {
+    if (rId === micRequestId) {
+      setMicDot(false);
+      document.getElementById('mic-error-inline').style.display = 'block';
+    }
+  }
+}
+
+function startVolMonitor() {
+  if (!micAnalyser) return;
+  const data = new Uint8Array(micAnalyser.frequencyBinCount);
+  function update() {
+    if (!micAnalyser) return;
+    micAnalyser.getByteFrequencyData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) sum += data[i];
+    const vol = Math.round((sum / data.length / 255) * 100);
+    document.getElementById('mic-vol-pct').textContent = vol + '%';
+    const bar = document.getElementById('mic-vol-bar');
+    bar.style.width = vol + '%';
+    bar.className = 'volume-fill ' + (vol > 70 ? 'vol-red' : vol > 40 ? 'vol-amber' : 'vol-green');
+    micAnimId = requestAnimationFrame(update);
+  }
+  update();
+}
+
+function stopMic() {
+  if (micAnimId) { cancelAnimationFrame(micAnimId); micAnimId = null; }
+  if (micRecorder && micRecorder.state !== 'inactive') micRecorder.stop();
+  micRecorder = null; micRecording = false;
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (micAudioCtx) { micAudioCtx.close(); micAudioCtx = null; }
+  micGainNode = null; micAnalyser = null;
+  document.getElementById('mic-vol-bar').style.width = '0%';
+  document.getElementById('mic-vol-pct').textContent = '0%';
+  document.getElementById('mic-record-btn').textContent = '🎙 Thu âm';
+  document.getElementById('mic-record-btn').className = 'btn btn-coral';
+  micRecording = false;
+  setMicDot(false);
+}
+
+document.getElementById('mic-select').addEventListener('change', e => openMic(e.target.value));
+document.getElementById('mic-retry-btn').addEventListener('click', initMic);
+
+document.getElementById('mic-gain-slider').addEventListener('input', e => {
+  const val = +e.target.value;
+  document.getElementById('mic-gain-pct').textContent = val + '%';
+  if (micGainNode) micGainNode.gain.value = val / 100;
+});
+
+document.getElementById('mic-record-btn').addEventListener('click', () => {
+  if (!micRecording) {
+    if (!micStream) return;
+    document.getElementById('mic-playback').style.display = 'none';
+    micChunks = [];
+    micRecorder = new MediaRecorder(micStream);
+    micRecorder.ondataavailable = e => { if (e.data.size > 0) micChunks.push(e.data); };
+    micRecorder.onstop = () => {
+      const blob = new Blob(micChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      document.getElementById('mic-audio').src = url;
+      document.getElementById('mic-playback').style.display = 'block';
+    };
+    micRecorder.start();
+    micRecording = true;
+    document.getElementById('mic-record-btn').textContent = '⏹ Dừng thu';
+    document.getElementById('mic-record-btn').className = 'btn btn-red animate-pulse';
+  } else {
+    if (micRecorder && micRecorder.state !== 'inactive') micRecorder.stop();
+    micRecording = false;
+    document.getElementById('mic-record-btn').textContent = '🎙 Thu âm';
+    document.getElementById('mic-record-btn').className = 'btn btn-coral';
+  }
+});
+
+// ============================================================
+//  SPEAKER TEST
+// ============================================================
+const tracks = [
+  { key: 'bass', label: 'Âm trầm (Bass)', description: '80 Hz — thử loa sub hoặc âm trầm', emoji: '🔉' },
+  { key: 'mid', label: 'Âm trung (Mid)', description: '1000 Hz — thử dải trung, giọng nói', emoji: '🔊' },
+  { key: 'high', label: 'Âm cao (Treble)', description: '8000 Hz — thử độ chi tiết âm thanh', emoji: '🎵' },
+  { key: 'sweep', label: 'Quét tần số (Sweep)', description: '80→8000 Hz — quét toàn dải để nghe tổng thể', emoji: '📡' },
+  { key: 'left', label: 'Kênh trái (Left)', description: '1000 Hz chỉ phát qua loa trái', emoji: '◀️' },
+  { key: 'right', label: 'Kênh phải (Right)', description: '1000 Hz chỉ phát qua loa phải', emoji: '▶️' },
+];
+let playingKey = null;
+let spkAudioCtx = null, spkOsc = null, spkGain = null, spkPan = null, spkSweep = null;
+let tracksBuilt = false;
+
+function initTracks() {
+  if (tracksBuilt) return;
+  tracksBuilt = true;
+  const grid = document.getElementById('tracks-grid');
+  grid.innerHTML = '';
+  tracks.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'track-card';
+    card.dataset.key = t.key;
+
+    const body = document.createElement('div');
+    body.className = 'track-body';
+    body.innerHTML = `
+      <div class="track-icon">${t.emoji}</div>
+      <div class="track-info">
+        <p class="track-name">${t.label}</p>
+        <p class="track-desc">${t.description}</p>
+      </div>
+      <div class="track-btn">▶ Phát</div>
+    `;
+    card.appendChild(body);
+    card.addEventListener('click', () => playTrack(t.key));
+    grid.appendChild(card);
+  });
+}
+
+function getSpkCtx() {
+  if (!spkAudioCtx || spkAudioCtx.state === 'closed') spkAudioCtx = new AudioContext();
+  return spkAudioCtx;
+}
+
+function stopSpk() {
+  if (spkSweep) { clearInterval(spkSweep); spkSweep = null; }
+  if (spkOsc) { try { spkOsc.stop(); } catch {} spkOsc.disconnect(); spkOsc = null; }
+  if (spkGain) { spkGain.disconnect(); spkGain = null; }
+  if (spkPan) { spkPan.disconnect(); spkPan = null; }
+  playingKey = null;
+  updateTrackCards();
+}
+
+function playTrack(key) {
+  if (playingKey === key) { stopSpk(); return; }
+  stopSpk();
+  const vol = +document.getElementById('speaker-vol-slider').value / 100;
+  const ctx = getSpkCtx();
+  spkGain = ctx.createGain();
+  spkGain.gain.value = vol;
+
+  if (key === 'left' || key === 'right') {
+    spkOsc = ctx.createOscillator();
+    spkOsc.type = 'sine'; spkOsc.frequency.value = 1000;
+    spkPan = ctx.createStereoPanner();
+    spkPan.pan.value = key === 'left' ? -1 : 1;
+    spkOsc.connect(spkPan); spkPan.connect(spkGain); spkGain.connect(ctx.destination);
+    spkOsc.start();
+  } else if (key === 'sweep') {
+    spkOsc = ctx.createOscillator();
+    spkOsc.type = 'sine'; spkOsc.frequency.value = 80;
+    spkOsc.connect(spkGain); spkGain.connect(ctx.destination);
+    spkOsc.start();
+    let freq = 80;
+    const step = (8000-80)/80;
+    spkSweep = setInterval(() => {
+      if (!spkOsc) return;
+      freq += step; if (freq > 8000) freq = 80;
+      spkOsc.frequency.value = freq;
+    }, 50);
+  } else {
+    const freqMap = { bass: 80, mid: 1000, high: 8000 };
+    spkOsc = ctx.createOscillator();
+    spkOsc.type = 'sine'; spkOsc.frequency.value = freqMap[key] ?? 1000;
+    spkOsc.connect(spkGain); spkGain.connect(ctx.destination);
+    spkOsc.start();
+  }
+  playingKey = key;
+  updateTrackCards();
+}
+
+function updateTrackCards() {
+  document.querySelectorAll('.track-card').forEach(card => {
+    const key = card.dataset.key;
+    const isPlaying = key === playingKey;
+    card.classList.toggle('playing', isPlaying);
+    card.querySelector('.track-btn').textContent = isPlaying ? '⏹ Dừng' : '▶ Phát';
+    // Waveform
+    let wf = card.querySelector('.waveform');
+    if (isPlaying && !wf) {
+      wf = document.createElement('div');
+      wf.className = 'waveform';
+      for (let i = 0; i < 24; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'wave-bar';
+        bar.style.height = Math.abs(Math.sin(i * 0.6)) * 100 + '%';
+        bar.style.animationDelay = i * 40 + 'ms';
+        wf.appendChild(bar);
+      }
+      card.appendChild(wf);
+    } else if (!isPlaying && wf) {
+      wf.remove();
+    }
+  });
+}
+
+document.getElementById('speaker-vol-slider').addEventListener('input', e => {
+  const val = +e.target.value;
+  document.getElementById('speaker-vol-val').textContent = val + '%';
+  if (spkGain) spkGain.gain.value = val / 100;
+});
+
+// ============================================================
+//  BATTERY TEST
+// ============================================================
+let battInitialized = false;
+let battMgr = null;
+
+function formatBatTime(s) {
+  if (!isFinite(s)) return '—';
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return h > 0 ? `${h}h ${m}m` : `${m} phút`;
+}
+
+function battColor(level, charging) {
+  if (charging) return 'charging';
+  if (level > 0.5) return 'high';
+  if (level > 0.2) return 'mid';
+  return 'low';
+}
+
+function updateBatteryUI(b) {
+  const noBat = b.level === 1 && b.charging && !isFinite(b.dischargingTime) && !isFinite(b.chargingTime);
+  document.getElementById('battery-no-battery').style.display = noBat ? 'block' : 'none';
+  document.getElementById('battery-main').style.display = noBat ? 'none' : 'block';
+
+  if (!noBat) {
+    const pct = Math.round(b.level * 100);
+    document.getElementById('bat-pct').textContent = pct + '%';
+    document.getElementById('bat-pct-label').textContent = pct + '%';
+    document.getElementById('bat-pct-label').style.color = b.level > 0.15 ? 'var(--bg-deep)' : 'var(--text-primary)';
+
+    const fill = document.getElementById('bat-fill');
+    fill.style.width = (b.level * 100) + '%';
+    fill.className = 'battery-fill ' + battColor(b.level, b.charging);
+
+    const charLabel = document.getElementById('bat-charging-label');
+    charLabel.textContent = b.charging ? '⚡ Đang sạc' : '';
+
+    const charRow = document.getElementById('bat-charging-row');
+    charRow.style.display = b.charging ? 'flex' : 'none';
+    if (b.charging) {
+      const txt = isFinite(b.chargingTime) ? `Đang sạc — đầy sau ${formatBatTime(b.chargingTime)}` : 'Đang sạc';
+      document.getElementById('bat-charging-text').textContent = txt;
+    }
+
+    const disRow = document.getElementById('bat-discharging-row');
+    disRow.style.display = (!b.charging && isFinite(b.dischargingTime)) ? 'block' : 'none';
+    if (!b.charging && isFinite(b.dischargingTime)) {
+      document.getElementById('bat-discharging-text').textContent = `Còn khoảng ${formatBatTime(b.dischargingTime)} sử dụng`;
+    }
+
+    const stateEl = document.getElementById('bat-state');
+    stateEl.textContent = b.charging ? '⚡ Sạc' : '🔋 Xả';
+    stateEl.style.color = b.charging ? 'var(--accent-sky)' : 'var(--green-500)';
+    document.getElementById('bat-level').textContent = pct + '%';
+    document.getElementById('bat-time').textContent = formatBatTime(b.dischargingTime);
+
+    const warn = document.getElementById('bat-warn');
+    if (!b.charging && b.level <= 0.2) {
+      warn.style.display = 'block';
+      document.getElementById('bat-warn-text').textContent = `⚠️ Pin yếu (${pct}%) — cắm sạc ngay!`;
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+}
+
+async function initBattery() {
+  if (!('getBattery' in navigator)) {
+    document.getElementById('battery-no-support').style.display = 'block';
+    return;
+  }
+  try {
+    battMgr = await navigator.getBattery();
+    updateBatteryUI(battMgr);
+    const upd = () => updateBatteryUI(battMgr);
+    battMgr.addEventListener('levelchange', upd);
+    battMgr.addEventListener('chargingchange', upd);
+    battMgr.addEventListener('chargingtimechange', upd);
+    battMgr.addEventListener('dischargingtimechange', upd);
+  } catch {
+    document.getElementById('battery-no-support').style.display = 'block';
+  }
+}
+
+// Copy buttons
+function setupCopyBtn(id, text) {
+  document.getElementById(id).addEventListener('click', async function() {
+    try {
+      await navigator.clipboard.writeText(text);
+      const orig = this.textContent;
+      this.textContent = '✓ Đã sao chép';
+      this.style.color = 'var(--green-500)';
+      setTimeout(() => { this.textContent = orig; this.style.color = ''; }, 2000);
+    } catch {}
+  });
+}
+setupCopyBtn('copy-cmd-btn', 'irm j2c.cc/batterycheck | iex');
+setupCopyBtn('copy-trouble1-btn', 'iex (curl.exe -s --doh-url https://1.1.1.1/dns-query j2c.cc/batterycheck | Out-String)');
+setupCopyBtn('copy-trouble2-btn', '[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12');
+
+document.getElementById('trouble-btn').addEventListener('click', function() {
+  const content = document.getElementById('trouble-content');
+  const icon = document.getElementById('trouble-icon');
+  content.classList.toggle('open');
+  icon.textContent = content.classList.contains('open') ? '▼' : '▶';
+});
+
+// ============================================================
+//  BACK TO TOP
+// ============================================================
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('back-to-top');
+  btn.classList.toggle('visible', window.scrollY > 200);
+});
+document.getElementById('back-to-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+buildKeyboard();
+initMouseTest();
+// Switch footer for initial tab
+document.querySelectorAll('.tab-footer').forEach(f => f.style.display = 'none');
+document.getElementById('footer-keyboard').style.display = 'grid';
+  // ============================================================
+//  FULLSCREEN FUNCTIONAL AREA
+// ============================================================
+const fsFuncBtn = document.getElementById('fs-func-btn');
+const funcArea = document.querySelector('main.content');
+const fsText = fsFuncBtn.querySelector('.fs-text');
+const fsIcon = fsFuncBtn.querySelector('.fs-icon');
+
+fsFuncBtn.addEventListener('click', () => {
+  // Nếu chưa ở chế độ toàn màn hình
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (funcArea.requestFullscreen) {
+      funcArea.requestFullscreen();
+    } else if (funcArea.webkitRequestFullscreen) { /* Hỗ trợ Safari */
+      funcArea.webkitRequestFullscreen();
+    }
+  } else {
+    // Nếu đang ở chế độ toàn màn hình thì thoát
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Hỗ trợ Safari */
+      document.webkitExitFullscreen();
+    }
+  }
+});
+
+// Lắng nghe sự kiện thay đổi trạng thái fullscreen để đổi text/icon của nút
+document.addEventListener('fullscreenchange', () => {
+  updateFsButton();
+  setTimeout(fitKeyboard, 100);
+});
+document.addEventListener('webkitfullscreenchange', () => {
+  updateFsButton();
+  setTimeout(fitKeyboard, 100);
+});
+
+function updateFsButton() {
+  if (document.fullscreenElement === funcArea || document.webkitFullscreenElement === funcArea) {
+    fsText.textContent = 'Thu nhỏ';
+    fsIcon.textContent = '🗕';
+    // Đổi màu nút sang trạng thái đang active
+    fsFuncBtn.classList.remove('btn-outline-coral');
+    fsFuncBtn.classList.add('btn-coral'); 
+  } else {
+    fsText.textContent = 'Phóng to khu vực Test';
+    fsIcon.textContent = '⛶';
+    // Trả lại màu nút bình thường
+    fsFuncBtn.classList.remove('btn-coral');
+    fsFuncBtn.classList.add('btn-outline-coral');
+  }
+}
+
+// Window resize & container resize observer for auto-scaling keyboard
+window.addEventListener('resize', fitKeyboard);
+if (window.ResizeObserver) {
+  const kbCont = document.getElementById('kb-container');
+  if (kbCont) {
+    const ro = new ResizeObserver(() => fitKeyboard());
+    ro.observe(kbCont);
+  }
+}
+window.addEventListener('load', fitKeyboard);
+setTimeout(fitKeyboard, 200);
+</script>
+  
+</body>
+</html>
