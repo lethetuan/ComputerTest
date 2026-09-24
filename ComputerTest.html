@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Computer.Test — Kiểm tra phần cứng máy tính</title>
+  <!-- Vue 3 (dùng cho tab FPS Check) -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <style>
     /* ===== FULLSCREEN FUNCTIONAL AREA ===== */
     main.content:fullscreen {
@@ -446,11 +448,19 @@
       color: var(--bg-deep);
       transform: scale(0.95);
       z-index: 10;
+      border-radius: 6px;
     }
     .key.key-pressed {
-      background: var(--bg-elevated);
-      border-color: var(--accent-amber);
-      color: var(--text-primary);
+      background: var(--green-500);
+      border-color: var(--green-500);
+      color: #ffffff;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .drK .key.key-pressed {
+      background: #16a34a;
+      border-color: var(--green-500);
+      color: #ffffff;
     }
     .key:hover:not(.key-active):not(.key-pressed) { border-color: var(--text-dim); }
     .key .shift-label {
@@ -1028,6 +1038,234 @@
     strong.coral { color: var(--accent-coral); }
     strong.amber { color: var(--accent-amber); }
     strong.sky { color: var(--accent-sky); }
+
+    /* ===== FPS CHECK TAB ===== */
+    #fps-app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: #0a1018;
+      color: #f3f4f6;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .fps-header {
+      background: #111827;
+      border-bottom: 1px solid #374151;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .fps-display {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .fps-number {
+      font-size: 2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .fps-label-dim { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }
+    .fps-stats-bar {
+      background: rgba(17,24,39,0.5);
+      border-bottom: 1px solid #374151;
+      padding: 0.375rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1.25rem;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .fps-stat-item { display: flex; align-items: center; gap: 0.35rem; }
+    .fps-stat-dim { color: #6b7280; }
+    .fps-toolbar {
+      background: rgba(17,24,39,0.3);
+      border-bottom: 1px solid #374151;
+      padding: 0.375rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+    .fps-btn {
+      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      border: 1px solid #374151;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .fps-btn:hover { border-color: #6b7280; }
+    .fps-btn.active-sky { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,0.1); }
+    .fps-btn.active-coral { border-color: #FF6B4A; color: #FF6B4A; background: rgba(255,107,74,0.1); }
+    .fps-btn.active-amber { border-color: #FFB830; color: #FFB830; background: rgba(255,184,48,0.1); }
+    .fps-divider { width: 1px; height: 1rem; background: #374151; flex-shrink: 0; }
+    .fps-settings {
+      background: rgba(17,24,39,0.6);
+      border-bottom: 1px solid #374151;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .fps-settings-row { display: flex; flex-direction: column; gap: 0.375rem; }
+    .fps-settings-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }
+    .fps-btn-group { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    .fps-graph-wrap {
+      background: rgba(17,24,39,0.2);
+      border-bottom: 1px solid #374151;
+      padding: 0.75rem 1rem;
+      flex-shrink: 0;
+    }
+    .fps-graph-title {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .fps-graph-legend { font-size: 0.6rem; color: #4b5563; }
+    .fps-track-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #0a1018;
+      min-height: 200px;
+    }
+    .fps-fullscreen-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      z-index: 50;
+      padding: 0.375rem 0.75rem;
+      background: rgba(17,24,39,0.85);
+      border: 1px solid #374151;
+      color: #f3f4f6;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .fps-fullscreen-btn:hover { background: #111827; border-color: #6b7280; }
+    .fps-paused-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10,16,24,0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fps-paused-text { font-size: 1.5rem; color: #9ca3af; font-weight: 700; }
+    /* Jank tab */
+    .fps-jank-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #374151;
+    }
+    .fps-score-big { font-size: 3rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+    .fps-jank-score-label { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-top: 2px; }
+    .fps-jank-meta { font-size: 0.75rem; }
+    .fps-jank-meta p { margin-bottom: 0.2rem; }
+    .fps-jank-events {
+      border-top: 1px solid #374151;
+      padding: 0.5rem 1rem;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    .fps-jank-events-title { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 0.25rem; }
+    .fps-jank-event-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; margin-bottom: 2px; }
+    .fps-dot-red { width: 6px; height: 6px; background: #f87171; flex-shrink: 0; }
+    /* Scroll tab */
+    .fps-scroll-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .fps-scroll-block {
+      margin: 0 1rem 0.75rem;
+      border: 1px solid #374151;
+      padding: 0.75rem;
+    }
+    .fps-scroll-block-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .fps-scroll-block-swatch { width: 2.5rem; height: 2.5rem; flex-shrink: 0; }
+    .fps-scroll-block-name { font-size: 0.875rem; font-weight: 700; color: #f3f4f6; }
+    .fps-scroll-block-desc { font-size: 0.7rem; color: #6b7280; }
+    .fps-scroll-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 0.4rem; }
+    .fps-scroll-tag { padding: 1px 6px; font-size: 0.6rem; border: 1px solid #374151; color: #6b7280; }
+    .fps-scroll-stripe { margin-top: 0.4rem; height: 3px; width: 100%; }
+    /* Ghosting tab */
+    .fps-ghosting-wrap {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .fps-ghosting-speed-bar {
+      position: absolute;
+      top: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.7rem;
+    }
+    .fps-ghosting-text {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      will-change: transform;
+    }
+    .fps-ghosting-stripe {
+      position: absolute;
+      inset: 0;
+      will-change: background-position;
+    }
+    .fps-ghosting-hint {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 0.7rem;
+      color: #6b7280;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .fps-color-green { color: #4ade80; }
+    .fps-color-amber { color: #FFB830; }
+    .fps-color-red { color: #f87171; }
+    .fps-color-sky { color: #38bdf8; }
+    .fps-color-dim { color: #6b7280; }
+    .fps-color-secondary { color: #9ca3af; }
+    #panel-fps .test-section {
+      padding: 0;
+      gap: 0;
+      margin-bottom: 0;
+    }
+    #panel-fps #fps-app {
+      min-height: 600px;
+    }
   </style>
 </head>
 <body>
@@ -1061,6 +1299,7 @@
       <button data-tab="micro">🎙️ Micro</button>
       <button data-tab="speaker">🔊 Loa</button>
       <button data-tab="battery">🔋 Pin</button>
+      <button data-tab="fps">🎬 FPS Check</button>
     </nav>
    
 
@@ -1619,6 +1858,278 @@
       </div>
     </div>
 
+    <!-- ===== FPS CHECK TAB ===== -->
+    <div class="tab-panel" id="panel-fps">
+      <div class="test-section animate-fade-up">
+        <div id="fps-app">
+          <!-- FPS Header -->
+          <div class="fps-header">
+            <div style="display:flex;align-items:center;gap:1rem;">
+              <span style="font-size:1rem;font-weight:700;">🎬 FPS Check</span>
+            </div>
+            <div class="fps-display">
+              <span class="fps-number" :class="fpsColorClass(fps)">{{ fps }}</span>
+              <span class="fps-label-dim">FPS</span>
+            </div>
+          </div>
+
+          <!-- Stats Bar -->
+          <div class="fps-stats-bar">
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Khung hình:</span>
+              <span class="fps-color-sky" style="font-variant-numeric:tabular-nums;min-width:48px;text-align:right;" :class="frameTimeColorClass(frameTime)">{{ frameTime.toFixed(1) }}ms</span>
+            </div>
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Thấp nhất:</span>
+              <span style="font-variant-numeric:tabular-nums;color:#9ca3af">{{ minFps === Infinity ? '—' : minFps }}</span>
+            </div>
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Cao nhất:</span>
+              <span style="font-variant-numeric:tabular-nums;color:#9ca3af">{{ maxFps || '—' }}</span>
+            </div>
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Trung bình:</span>
+              <span style="font-variant-numeric:tabular-nums;color:#9ca3af">{{ avgFps || '—' }}</span>
+            </div>
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Rớt khung:</span>
+              <span :class="droppedFrames > 0 ? 'fps-color-red' : 'fps-color-secondary'">{{ droppedFrames }}</span>
+            </div>
+            <div class="fps-stat-item">
+              <span class="fps-stat-dim">Hz màn hình:</span>
+              <span style="color:#9ca3af">{{ detectedHz || '…' }}</span>
+            </div>
+          </div>
+
+          <!-- Toolbar -->
+          <div class="fps-toolbar">
+            <button class="fps-btn" :class="activeTab === 'framerate' ? 'active-sky' : ''" @click="activeTab = 'framerate'">🎬 Khung hình</button>
+            <button class="fps-btn" :class="activeTab === 'jank' ? 'active-sky' : ''" @click="activeTab = 'jank'">📊 Trễ nhịp</button>
+            <button class="fps-btn" :class="activeTab === 'scroll' ? 'active-sky' : ''" @click="activeTab = 'scroll'; startScrollMonitor()">📜 Cuộn</button>
+            <button class="fps-btn" :class="activeTab === 'ghosting' ? 'active-sky' : ''" @click="activeTab = 'ghosting'">👻 Lưu ảnh</button>
+            <span class="fps-divider"></span>
+            <button v-if="activeTab === 'framerate'" class="fps-btn" :class="showSettings ? 'active-coral' : ''" @click="showSettings = !showSettings">⚙ Cài đặt</button>
+            <button class="fps-btn" @click="isPaused = !isPaused">{{ isPaused ? '▶ Tiếp' : '⏸ Dừng' }}</button>
+            <button class="fps-btn" @click="resetStats()">↺ Đặt lại</button>
+            <button class="fps-btn" @click="showGraph = !showGraph">{{ showGraph ? '▼ Ẩn biểu đồ' : '▶ Biểu đồ' }}</button>
+            <span class="fps-divider"></span>
+            <button class="fps-btn" @click="toggleFullscreen()" style="border-color:#9ca3af;color:#f3f4f6;">🖵 Phóng to</button>
+          </div>
+
+          <!-- Settings Panel -->
+          <div v-if="showSettings" class="fps-settings">
+            <div class="fps-settings-row">
+              <span class="fps-settings-label">So sánh tốc độ khung hình</span>
+              <div class="fps-btn-group">
+                <button v-for="(preset, i) in presets" :key="preset.name" class="fps-btn" :class="selectedPresetIndex === i ? 'active-coral' : ''" @click="applyPreset(i)">{{ preset.name }}</button>
+              </div>
+            </div>
+            <div v-if="selectedPresetIndex === presets.length - 1" class="fps-settings-row">
+              <span class="fps-settings-label">Tuỳ chỉnh</span>
+              <div style="display:flex;gap:0.25rem;flex-wrap:wrap;align-items:center">
+                <input v-model="customFpsInput" type="number" min="1" max="1000" style="width:4rem;padding:0.25rem 0.5rem;background:#111827;border:1px solid #374151;color:#f3f4f6;font-family:inherit;font-size:0.7rem;" @keydown.enter="addCustomLane()" />
+                <button class="fps-btn fps-color-sky" style="border-color:#38bdf8" :class="{ 'opacity-40': lanes.length >= 5 }" @click="addCustomLane()">+ Thêm</button>
+                <span v-for="(lane, li) in lanes" :key="li" style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border:1px solid #374151;font-size:0.65rem;">
+                  <span style="width:8px;height:8px;display:inline-block;" :style="{ background: lane.color }"></span> {{ lane.label }}
+                  <button style="background:none;border:none;color:#6b7280;cursor:pointer;padding:0;font-size:0.8rem;" @click="removeLane(li)">×</button>
+                </span>
+              </div>
+            </div>
+            <div class="fps-settings-row">
+              <span class="fps-settings-label">Tốc độ (px/s)</span>
+              <div class="fps-btn-group">
+                <button v-for="(s, i) in speeds" :key="s" class="fps-btn" :class="selectedSpeedIndex === i ? 'active-sky' : ''" @click="selectedSpeedIndex = i">{{ s }}</button>
+              </div>
+            </div>
+            <div class="fps-settings-row">
+              <span class="fps-settings-label">Chế độ hiển thị</span>
+              <div class="fps-btn-group">
+                <button class="fps-btn" :class="testMode === 'bars' ? 'active-amber' : ''" @click="testMode = 'bars'">Thanh ngang</button>
+                <button class="fps-btn" :class="testMode === 'chase' ? 'active-amber' : ''" @click="testMode = 'chase'">UFO</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Frame Time Graph -->
+          <div v-if="showGraph" class="fps-graph-wrap">
+            <div class="fps-graph-title">
+              Thời gian khung hình <span class="fps-graph-legend">(ms)</span>
+            </div>
+            <svg viewBox="0 0 360 70" style="width:100%;height:70px;" preserveAspectRatio="none">
+              <line x1="0" :y1="targetY" x2="360" :y2="targetY" stroke="#4A6180" stroke-width="0.5" stroke-dasharray="4,4" />
+              <text x="362" :y="targetY + 3" fill="#4A6180" font-size="6">16.7ms</text>
+              <polygon v-if="graphFill" :points="graphFill" fill="rgba(56,189,248,0.1)" />
+              <polyline v-if="graphPoints" :points="graphPoints" fill="none" stroke="#38BDF8" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:#6b7280;margin-top:2px;">
+              <span>0ms</span><span>50ms</span>
+            </div>
+          </div>
+
+          <!-- Test Area -->
+          <div ref="trackContainer" class="fps-track-area">
+
+            <!-- Fullscreen exit button -->
+            <button v-if="isFullscreen" @click="toggleFullscreen()" class="fps-fullscreen-btn">🗗 Thu nhỏ (ESC)</button>
+
+            <!-- ===== FRAMERATE TAB ===== -->
+            <template v-if="activeTab === 'framerate'">
+              <div style="position:absolute;inset:0;opacity:0.04;background-image:repeating-linear-gradient(90deg,#fff 0px,#fff 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,#fff 0px,#fff 1px,transparent 1px,transparent 80px);"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;user-select:none;">
+                <span style="font-size:7rem;font-weight:800;color:rgba(255,255,255,0.03);font-variant-numeric:tabular-nums;">{{ speed }}</span>
+              </div>
+              <div style="position:absolute;top:50%;left:0;width:100%;transform:translateY(-50%);display:flex;flex-direction:column;gap:0.5rem;">
+                <div v-for="(lane, li) in lanes" :key="li" class="fps-lane-row" :style="{ position:'relative', display:'flex', alignItems:'center', height: laneHeight + 'px' }">
+                  <div style="position:absolute;left:0.75rem;z-index:10;font-size:0.875rem;font-weight:700;user-select:none;" :style="{ color: lane.color }">{{ lane.label }}</div>
+                  <div v-if="li < lanes.length - 1" style="position:absolute;bottom:0;left:0;width:100%;height:1px;background:rgba(255,255,255,0.05);"></div>
+
+                  <template v-if="testMode === 'bars'">
+                    <div style="position:absolute;top:2px;bottom:2px;left:0;width:100%;">
+                      <div style="position:absolute;top:0;height:100%;" :style="{ width:'80px', left: lane.position - 80 + 'px', background: lane.color, boxShadow: '0 0 20px ' + lane.glow }"></div>
+                      <div style="position:absolute;top:0;height:100%;opacity:0.2;" :style="{ width:'160px', left: lane.position - 240 + 'px', background: 'linear-gradient(to right, transparent, ' + lane.color + ')' }"></div>
+                    </div>
+                  </template>
+
+                  <template v-else>
+                    <div style="position:absolute;font-size:2rem;user-select:none;" :style="{ left: lane.position - 36 + 'px' }">🛸</div>
+                    <div style="position:absolute;top:50%;left:0;width:100%;height:1px;transform:translateY(-50%);" :style="{ background: 'linear-gradient(to right, transparent 0%, ' + lane.color + '33 50%, transparent 100%)' }"></div>
+                  </template>
+                </div>
+              </div>
+
+              <div v-if="isPaused" class="fps-paused-overlay">
+                <span class="fps-paused-text">⏸ Đã tạm dừng</span>
+              </div>
+            </template>
+
+            <!-- ===== JANK DETECTOR TAB ===== -->
+            <template v-if="activeTab === 'jank'">
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;">
+                <div class="fps-jank-header">
+                  <div style="display:flex;align-items:center;gap:1rem;">
+                    <div style="text-align:center;">
+                      <p class="fps-score-big" :class="jankScoreColor(jankScore)">{{ jankScore }}</p>
+                      <p class="fps-jank-score-label">Điểm mượt</p>
+                    </div>
+                    <div class="fps-jank-meta">
+                      <p :class="jankScoreColor(jankScore)" style="font-weight:700;">{{ jankScoreLabel(jankScore) }}</p>
+                      <p style="color:#6b7280;">Trễ nhịp: <span :class="jankTotalDropped > 0 ? 'fps-color-red' : 'fps-color-secondary'" style="font-variant-numeric:tabular-nums;">{{ jankTotalDropped }} lần</span></p>
+                      <p style="color:#6b7280;">Ngưỡng: <span style="color:#9ca3af;font-variant-numeric:tabular-nums;">{{ jankThreshold }}ms</span></p>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <button class="fps-btn" :class="jankRecording ? 'active-coral' : 'active-sky'" style="min-width:60px" @click="jankRecording = !jankRecording">{{ jankRecording ? '⏸ Dừng' : '▶ Ghi' }}</button>
+                    <button class="fps-btn" @click="resetJank()">↺ Đặt lại</button>
+                  </div>
+                </div>
+
+                <div style="flex:1;padding:0.75rem 1rem;display:flex;flex-direction:column;min-height:0;">
+                  <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:#6b7280;margin-bottom:0.5rem;">
+                    <span style="text-transform:uppercase;letter-spacing:0.08em;">Thời gian khung hình (ms) — thời gian thực</span>
+                    <span>Vùng đỏ = trễ nhịp (&gt;{{ jankThreshold }}ms)</span>
+                  </div>
+                  <div style="flex:1;position:relative;min-height:80px;">
+                    <svg viewBox="0 0 360 80" style="width:100%;height:100%;" preserveAspectRatio="none">
+                      <line x1="0" :y1="80 - (16.67 / 60) * 80" x2="360" :y2="80 - (16.67 / 60) * 80" stroke="#4A6180" stroke-width="0.5" stroke-dasharray="4,4" />
+                      <line x1="0" :y1="80 - (jankThreshold / 60) * 80" x2="360" :y2="80 - (jankThreshold / 60) * 80" stroke="#f87171" stroke-width="0.5" stroke-dasharray="2,4" />
+                      <polygon v-if="jankTimelineFill" :points="jankTimelineFill" fill="rgba(56,189,248,0.08)" />
+                      <polyline v-if="jankTimelinePoints" :points="jankTimelinePoints" fill="none" stroke="#38BDF8" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+                      <template v-for="(ft, fi) in jankFrameTimes" :key="fi">
+                        <line v-if="ft > jankThreshold" :x1="(fi / (jankTimelineLength - 1)) * 360" :y1="80" :x2="(fi / (jankTimelineLength - 1)) * 360" :y2="80 - Math.min(ft / 60, 1) * 80" stroke="#f87171" stroke-width="2" opacity="0.6" />
+                      </template>
+                    </svg>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:#6b7280;margin-top:2px;">
+                    <span>0ms</span><span>60ms</span>
+                  </div>
+                </div>
+
+                <div class="fps-jank-events">
+                  <p class="fps-jank-events-title">Lần trễ nhịp gần đây</p>
+                  <div v-if="jankEvents.length === 0" style="font-size:0.7rem;color:#6b7280;padding:0.25rem 0;">Chưa phát hiện trễ nhịp — màn hình đang mượt ✓</div>
+                  <div v-else>
+                    <div v-for="(evt, ei) in [...jankEvents].reverse().slice(0, 15)" :key="ei" class="fps-jank-event-row">
+                      <span class="fps-dot-red"></span>
+                      <span style="color:#6b7280;font-variant-numeric:tabular-nums;">{{ (evt.timestamp / 1000).toFixed(1) }}s</span>
+                      <span class="fps-color-red" style="font-weight:700;font-variant-numeric:tabular-nums;">{{ evt.frameDuration }}ms</span>
+                      <span style="color:#6b7280;">vượt {{ Math.round(evt.frameDuration / 16.67) }}× mức cho phép</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- ===== SCROLL JANK TAB ===== -->
+            <template v-if="activeTab === 'scroll'">
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;">
+                <div class="fps-jank-header">
+                  <div style="display:flex;align-items:center;gap:1rem;">
+                    <div style="text-align:center;">
+                      <p class="fps-score-big" :class="jankScoreColor(scrollJankScore)">{{ scrollJankScore }}</p>
+                      <p class="fps-jank-score-label">Điểm cuộn</p>
+                    </div>
+                    <div class="fps-jank-meta">
+                      <p :class="jankScoreColor(scrollJankScore)" style="font-weight:700;">{{ jankScoreLabel(scrollJankScore) }}</p>
+                      <p style="color:#6b7280;">Trễ nhịp: <span :class="scrollDroppedFrames > 0 ? 'fps-color-red' : 'fps-color-secondary'">{{ scrollDroppedFrames }} lần</span></p>
+                      <p style="color:#6b7280;">Tổng khung: <span style="color:#9ca3af;">{{ scrollTotalFrames }}</span></p>
+                    </div>
+                  </div>
+                  <button class="fps-btn" @click="resetScrollJank()">↺ Đặt lại</button>
+                </div>
+
+                <div v-if="scrollFrameTimes.length > 1" style="padding:0.5rem 1rem;border-bottom:1px solid #374151;flex-shrink:0;">
+                  <svg viewBox="0 0 360 50" style="width:100%;height:50px;" preserveAspectRatio="none">
+                    <line x1="0" :y1="50 - (16.67 / 60) * 50" x2="360" :y2="50 - (16.67 / 60) * 50" stroke="#4A6180" stroke-width="0.5" stroke-dasharray="4,4" />
+                    <polyline :points="scrollTimelinePoints" fill="none" stroke="#38BDF8" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+                    <template v-for="(ft, fi) in scrollFrameTimes" :key="fi">
+                      <line v-if="ft > jankThreshold" :x1="(fi / 299) * 360" :y1="50" :x2="(fi / 299) * 360" :y2="50 - Math.min(ft / 60, 1) * 50" stroke="#f87171" stroke-width="2" opacity="0.6" />
+                    </template>
+                  </svg>
+                </div>
+
+                <div class="fps-scroll-content" @scroll="onScroll">
+                  <div style="padding:0.75rem 1rem;">
+                    <p style="font-size:0.75rem;color:#6b7280;">👆 Cuộn khu vực này để đo độ mượt. Nội dung được tạo nặng có chủ đích.</p>
+                  </div>
+                  <div v-for="block in 60" :key="block" class="fps-scroll-block">
+                    <div class="fps-scroll-block-head">
+                      <div class="fps-scroll-block-swatch" :style="{ background: 'linear-gradient(' + (block * 37) + 'deg, ' + (laneColors[block % laneColors.length]?.color ?? '#FF6B4A') + ', ' + (laneColors[(block + 1) % laneColors.length]?.color ?? '#38BDF8') + ')', filter: 'blur(0.5px)' }"></div>
+                      <div>
+                        <p class="fps-scroll-block-name">Khối #{{ block }}</p>
+                        <p class="fps-scroll-block-desc">Phần tử nặng với gradient, shadow, blur</p>
+                      </div>
+                    </div>
+                    <div class="fps-scroll-tags">
+                      <span v-for="tag in 6" :key="tag" class="fps-scroll-tag" :style="{ boxShadow: '0 0 ' + (tag * 2) + 'px ' + (laneColors[(block + tag) % laneColors.length]?.color ?? '#FF6B4A') + '33' }">tag-{{ block }}-{{ tag }}</span>
+                    </div>
+                    <div class="fps-scroll-stripe" :style="{ background: 'repeating-linear-gradient(90deg, ' + (laneColors[block % laneColors.length]?.color ?? '#FF6B4A') + '40 0px, transparent 2px, transparent 4px)' }"></div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- ===== GHOSTING TAB ===== -->
+            <template v-if="activeTab === 'ghosting'">
+              <div class="fps-ghosting-wrap">
+                <div class="fps-ghosting-speed-bar">
+                  <span style="color:#6b7280;">Tốc độ:</span>
+                  <button v-for="s in [1,2,3,5]" :key="s" class="fps-btn" :class="ghostingSpeed === s ? 'active-sky' : ''" @click="ghostingSpeed = s">{{ s }}x</button>
+                </div>
+                <div style="position:absolute;top:0;height:100%;display:flex;flex-direction:column;justify-content:center;" :style="{ left: -ghostingTileWidth + 'px', transform: 'translateX(' + (-ghostingPosition) + 'px)', willChange: 'transform' }">
+                  <div v-for="row in 12" :key="row" style="white-space:nowrap;font-weight:700;user-select:none;line-height:1.3;" :style="{ color: row % 2 === 0 ? '#ffffff' : 'rgba(255,255,255,0.3)', fontSize: row % 3 === 0 ? '28px' : row % 3 === 1 ? '20px' : '16px' }">
+                    <span v-for="n in 60" :key="n">{{ row % 2 === 0 ? 'KIỂM TRA LƯU ẢNH ██ ' : '░░░░░░░░░░░░░░ ' }}</span>
+                  </div>
+                </div>
+                <div style="position:absolute;inset:0;" :style="{ backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 16px, #0a1018 16px, #0a1018 32px)', backgroundPositionX: (-ghostingPosition * 1.5) + 'px', willChange: 'background-position' }"></div>
+                <div class="fps-ghosting-hint">Nếu bạn thấy viền mờ hoặc bóng ma (rõ hơn khi tăng tốc độ), màn hình của bạn có hiện tượng lưu ảnh</div>
+              </div>
+            </template>
+
+          </div><!-- end fps-track-area -->
+        </div><!-- end fps-app -->
+      </div>
+    </div>
+
   </main>
 
   <!-- Footer Instructions -->
@@ -1629,7 +2140,7 @@
         <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
         <div class="text-block">
           <p>1. <strong class="sky">Nhấn phím:</strong> Phím trên màn hình sẽ đổi màu khi bạn nhấn phím vật lý tương ứng</p>
-          <p>2. <strong class="sky">Màu sắc:</strong> Màu cam biểu thị phím đang nhấn, màu vàng biểu thị phím đã được nhấn</p>
+          <p>2. <strong class="sky">Màu sắc:</strong> Màu Xanh biểu thị phím đã nhấn.</p>
           <p>3. <strong class="sky">Bố cục:</strong> Chuyển đổi giữa các bố cục bàn phím khác nhau</p>
           <p>4. <strong class="sky">Âm thanh:</strong> Bật âm thanh để nghe tiếng gõ phím</p>
           <p>5. <strong class="sky">Đặt lại:</strong> Xóa toàn bộ phím đã nhấn</p>
@@ -1747,6 +2258,27 @@
         <div class="text-block">
           <p>Pin laptop theo thời gian sẽ giảm dung lượng</p>
           <p>Kiểm tra định kỳ giúp bạn biết tình trạng hiện tại của pin thôi chứ lúc nó đột tử thì bạn cũng phải đi thay mới à</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid tab-footer" id="footer-fps" style="display:none">
+      <div class="footer-section">
+        <h2><span class="mark sky">//</span> Hướng dẫn sử dụng</h2>
+        <div class="text-block">
+          <p>1. <strong class="sky">Khung hình:</strong> Xem các thanh di chuyển ở các tốc độ FPS khác nhau — quan sát độ mượt của từng luồng</p>
+          <p>2. <strong class="sky">Trễ nhịp:</strong> Ghi lại các khung hình bị giật lag, tính điểm độ mượt từ 0–100</p>
+          <p>3. <strong class="sky">Cuộn:</strong> Cuộn nội dung nặng để đo hiệu suất cuộn thực tế của màn hình</p>
+          <p>4. <strong class="sky">Lưu ảnh:</strong> Quan sát văn bản di chuyển để phát hiện ghosting (ảo ảnh bóng ma) của màn hình</p>
+          <p>5. <strong class="sky">Phóng to:</strong> Sử dụng nút Phóng to hoặc F11 để đo chính xác hơn ở chế độ toàn màn hình</p>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h2><span class="mark amber">//</span> Đọc kết quả FPS</h2>
+        <div class="text-block">
+          <p><strong class="coral">FPS cao (≥ 60):</strong> Màn hình hoạt động mượt. Hình ảnh hiển thị rõ ràng, không bị giật.</p>
+          <p><strong class="amber">FPS trung bình (30–59):</strong> Đủ dùng cho phần lớn tác vụ. Game có thể hơi giật ở mức thấp hơn 60.</p>
+          <p><strong class="coral">FPS thấp (&lt; 30):</strong> Hình ảnh giật đáng kể. Kiểm tra driver card màn hình hoặc giảm tải đồ họa.</p>
+          <p><strong>Điểm mượt ≥ 95:</strong> Hoàn hảo. Màn hình không bị trễ nhịp đáng kể trong quá trình đo.</p>
         </div>
       </div>
     </div>
@@ -2227,6 +2759,9 @@ function resetKeyboard() {
   keyHistory.length = 0; historyId = 0;
   pressesInCurrentSecond = 0; currentCps = 0;
   lastInterval = 0; lastPressTime = 0;
+  document.querySelectorAll('#keyboard-layout .key, #mouse-row .key').forEach(el => {
+    el.classList.remove('key-active', 'key-pressed');
+  });
   updateAllKeyStyles();
   updateHistory();
   updateStats();
@@ -2234,12 +2769,18 @@ function resetKeyboard() {
 
 // Mouse detection
 window.addEventListener('mousedown', e => {
+  const kbPanel = document.getElementById('panel-keyboard');
+  if (!kbPanel || !kbPanel.classList.contains('active')) return;
+  if (e.target.closest('button, nav, a, input, select, .kb-toolbar, .top-nav-bar')) return;
   const btn = e.button === 0 ? 'Left' : e.button === 1 ? 'Middle' : 'Right';
   mouseStates[btn] = 'active';
   const el = document.getElementById('mouse-' + btn.toLowerCase());
   if (el) { el.classList.remove('key-active','key-pressed'); el.classList.add('key-active'); }
 });
 window.addEventListener('mouseup', e => {
+  const kbPanel = document.getElementById('panel-keyboard');
+  if (!kbPanel || !kbPanel.classList.contains('active')) return;
+  if (e.target.closest('button, nav, a, input, select, .kb-toolbar, .top-nav-bar')) return;
   const btn = e.button === 0 ? 'Left' : e.button === 1 ? 'Middle' : 'Right';
   mouseStates[btn] = 'pressed';
   const el = document.getElementById('mouse-' + btn.toLowerCase());
@@ -2655,6 +3196,8 @@ function switchTab(tab) {
   if (tab === 'micro' && !micInitialized) { micInitialized = true; initMic(); }
   if (tab === 'battery' && !battInitialized) { battInitialized = true; initBattery(); }
   if (tab === 'speaker') initTracks();
+  if (tab === 'fps' && !fpsInitialized) { fpsInitialized = true; initFpsApp(); }
+  if (tab !== 'fps' && fpsVueApp) { /* FPS app stays alive in background */ }
 }
 
 document.getElementById('tab-nav').addEventListener('click', e => {
@@ -3355,6 +3898,388 @@ if (window.ResizeObserver) {
 }
 window.addEventListener('load', fitKeyboard);
 setTimeout(fitKeyboard, 200);
+
+// ============================================================
+//  FPS CHECK — VUE 3 APP
+// ============================================================
+let fpsInitialized = false;
+let fpsVueApp = null;
+
+function initFpsApp() {
+  if (!window.Vue) { console.warn('Vue 3 not loaded'); return; }
+  const { createApp, ref, reactive, computed, onMounted, onUnmounted } = Vue;
+
+  const app = createApp({
+    setup() {
+      // FPS tracking
+      const fps = ref(0);
+      const frameTime = ref(0);
+      const frameTimeHistory = ref([]);
+      const maxHistoryLength = 120;
+      let lastTimestamp = 0, frameCount = 0, fpsAccumulator = 0, animationId = 0;
+
+      // Presets
+      const presets = [
+        { name: '15 vs 30 vs 60', rates: [15, 30, 60] },
+        { name: '30 vs 60', rates: [30, 60] },
+        { name: '30 vs 60 vs 120', rates: [30, 60, 120] },
+        { name: '60 vs 120 vs 144', rates: [60, 120, 144] },
+        { name: '60 vs 144 vs 240', rates: [60, 144, 240] },
+        { name: 'Tuỳ chỉnh', rates: [] },
+      ];
+      const selectedPresetIndex = ref(0);
+      const laneColors = [
+        { color: '#FF6B4A', glow: 'rgba(255,107,74,0.3)' },
+        { color: '#38BDF8', glow: 'rgba(56,189,248,0.3)' },
+        { color: '#FFB830', glow: 'rgba(255,184,48,0.3)' },
+        { color: '#fb7185', glow: 'rgba(251,113,133,0.3)' },
+        { color: '#34d399', glow: 'rgba(52,211,153,0.3)' },
+      ];
+      const lanes = reactive([]);
+
+      function buildLanes(rates) {
+        lanes.length = 0;
+        rates.forEach((targetFps, i) => {
+          const idx = i % laneColors.length;
+          lanes.push({ label: `${targetFps} FPS`, targetFps, color: laneColors[idx].color, glow: laneColors[idx].glow, position: 0, lastDrawTime: 0 });
+        });
+      }
+
+      function applyPreset(index) {
+        selectedPresetIndex.value = index;
+        const preset = presets[index];
+        if (preset && preset.rates.length > 0) buildLanes(preset.rates);
+      }
+
+      const customFpsInput = ref('60');
+
+      function addCustomLane() {
+        const val = parseInt(customFpsInput.value);
+        if (val > 0 && val <= 1000 && lanes.length < 5) {
+          const idx = lanes.length % laneColors.length;
+          lanes.push({ label: `${val} FPS`, targetFps: val, color: laneColors[idx].color, glow: laneColors[idx].glow, position: 0, lastDrawTime: 0 });
+          selectedPresetIndex.value = presets.length - 1;
+        }
+      }
+
+      function removeLane(index) {
+        lanes.splice(index, 1);
+        selectedPresetIndex.value = presets.length - 1;
+      }
+
+      // Test settings
+      const speeds = [480, 960, 1920, 3840];
+      const selectedSpeedIndex = ref(1);
+      const speed = computed(() => speeds[selectedSpeedIndex.value] ?? 960);
+      const isPaused = ref(false);
+      const showGraph = ref(true);
+      const showSettings = ref(false);
+      const testMode = ref('bars');
+      const activeTab = ref('framerate');
+
+      // Screen info
+      const detectedHz = ref(0);
+
+      function detectRefreshRate() {
+        let hzFrames = 0, hzStart = 0, hzId = 0;
+        function hzLoop(ts) {
+          if (hzStart === 0) { hzStart = ts; hzFrames = 0; }
+          hzFrames++;
+          if (ts - hzStart >= 1000) {
+            detectedHz.value = Math.round(hzFrames / ((ts - hzStart) / 1000));
+          } else { hzId = requestAnimationFrame(hzLoop); }
+        }
+        hzId = requestAnimationFrame(hzLoop);
+        setTimeout(() => cancelAnimationFrame(hzId), 1500);
+      }
+
+      // Jank Detector
+      const jankEvents = ref([]);
+      const jankTimelineLength = 300;
+      const jankFrameTimes = ref([]);
+      const jankScore = ref(100);
+      const jankTotalDropped = ref(0);
+      const jankRecording = ref(true);
+      const jankStartTime = ref(0);
+      const jankThreshold = 25;
+
+      function updateJank(delta, timestamp) {
+        if (activeTab.value !== 'jank' || !jankRecording.value) return;
+        if (jankStartTime.value === 0) jankStartTime.value = timestamp;
+        jankFrameTimes.value.push(delta);
+        if (jankFrameTimes.value.length > jankTimelineLength) jankFrameTimes.value.shift();
+        if (delta > jankThreshold) {
+          jankTotalDropped.value++;
+          jankEvents.value.push({ timestamp: timestamp - jankStartTime.value, frameDuration: Math.round(delta) });
+          if (jankEvents.value.length > 200) jankEvents.value.shift();
+        }
+        const recent = jankFrameTimes.value.slice(-120);
+        const goodFrames = recent.filter(t => t <= jankThreshold).length;
+        jankScore.value = recent.length > 0 ? Math.round((goodFrames / recent.length) * 100) : 100;
+      }
+
+      function resetJank() {
+        jankEvents.value = []; jankFrameTimes.value = [];
+        jankScore.value = 100; jankTotalDropped.value = 0; jankStartTime.value = 0;
+      }
+
+      const jankTimelinePoints = computed(() => {
+        const history = jankFrameTimes.value;
+        if (history.length < 2) return '';
+        const w = 360, h = 80, maxMs = 60;
+        const step = w / (jankTimelineLength - 1);
+        return history.map((ms, i) => `${i * step},${h - Math.min(ms / maxMs, 1) * h}`).join(' ');
+      });
+
+      const jankTimelineFill = computed(() => {
+        const pts = jankTimelinePoints.value;
+        if (!pts) return '';
+        const lastX = ((jankFrameTimes.value.length - 1) / (jankTimelineLength - 1)) * 360;
+        return `0,80 ${pts} ${lastX},80`;
+      });
+
+      function jankScoreColor(score) {
+        if (score >= 95) return 'fps-color-green';
+        if (score >= 80) return 'fps-color-amber';
+        return 'fps-color-red';
+      }
+
+      function jankScoreLabel(score) {
+        if (score >= 98) return 'Hoàn hảo';
+        if (score >= 95) return 'Rất mượt';
+        if (score >= 85) return 'Ổn';
+        if (score >= 70) return 'Hơi trễ';
+        return 'Trễ nhiều';
+      }
+
+      // Scroll Jank
+      const scrollJankScore = ref(100);
+      const scrollFrameTimes = ref([]);
+      const scrollDroppedFrames = ref(0);
+      const scrollIsMonitoring = ref(false);
+      const scrollTotalFrames = ref(0);
+      let scrollRafId = 0, scrollLastTs = 0, scrolling = false, scrollTimeout = 0;
+
+      function onScroll() {
+        scrolling = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(() => { scrolling = false; }, 150);
+      }
+
+      function scrollMonitorLoop(ts) {
+        if (!scrollIsMonitoring.value) return;
+        if (scrollLastTs > 0 && scrolling) {
+          const delta = ts - scrollLastTs;
+          scrollTotalFrames.value++;
+          scrollFrameTimes.value.push(delta);
+          if (scrollFrameTimes.value.length > 300) scrollFrameTimes.value.shift();
+          if (delta > jankThreshold) scrollDroppedFrames.value++;
+          const recent = scrollFrameTimes.value.slice(-120);
+          const good = recent.filter(t => t <= jankThreshold).length;
+          scrollJankScore.value = recent.length > 0 ? Math.round((good / recent.length) * 100) : 100;
+        }
+        scrollLastTs = ts;
+        scrollRafId = requestAnimationFrame(scrollMonitorLoop);
+      }
+
+      function startScrollMonitor() {
+        if (scrollIsMonitoring.value) return;
+        scrollIsMonitoring.value = true;
+        scrollLastTs = 0;
+        scrollRafId = requestAnimationFrame(scrollMonitorLoop);
+      }
+
+      function stopScrollMonitor() {
+        scrollIsMonitoring.value = false;
+        cancelAnimationFrame(scrollRafId);
+      }
+
+      function resetScrollJank() {
+        scrollJankScore.value = 100; scrollFrameTimes.value = [];
+        scrollDroppedFrames.value = 0; scrollTotalFrames.value = 0;
+      }
+
+      const scrollTimelinePoints = computed(() => {
+        const history = scrollFrameTimes.value;
+        if (history.length < 2) return '';
+        const w = 360, h = 50, maxMs = 60;
+        const step = w / 299;
+        return history.map((ms, i) => `${i * step},${h - Math.min(ms / maxMs, 1) * h}`).join(' ');
+      });
+
+      // Ghosting
+      const ghostingSpeed = ref(2);
+      const ghostingPosition = ref(0);
+      const ghostingTileWidth = 384;
+
+      // Container
+      const trackContainer = ref(null);
+      const containerWidth = ref(800);
+      const isFullscreen = ref(false);
+
+      function toggleFullscreen() {
+        const elem = trackContainer.value;
+        if (!elem) return;
+        if (!document.fullscreenElement) {
+          (elem.requestFullscreen || elem.webkitRequestFullscreen || function(){}).call(elem);
+        } else {
+          (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+        }
+      }
+
+      function onFullscreenChange() {
+        isFullscreen.value = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        setTimeout(updateContainerWidth, 100);
+      }
+
+      const laneHeight = computed(() => {
+        if (lanes.length === 0) return 80;
+        const availableHeight = isFullscreen.value && trackContainer.value ? trackContainer.value.clientHeight : 300;
+        return Math.max(40, Math.floor(availableHeight / lanes.length) - 8);
+      });
+
+      function updateGhosting(delta) {
+        if (activeTab.value !== 'ghosting' || isPaused.value) return;
+        const pxPerMs = (ghostingSpeed.value * 200) / 1000;
+        ghostingPosition.value = (ghostingPosition.value + pxPerMs * delta) % ghostingTileWidth;
+      }
+
+      // Stats
+      const minFps = ref(Infinity);
+      const maxFps = ref(0);
+      const avgFps = ref(0);
+      const fpsSum = ref(0);
+      const fpsSamples = ref(0);
+      const droppedFrames = ref(0);
+
+      function resetStats() {
+        minFps.value = Infinity; maxFps.value = 0; avgFps.value = 0;
+        fpsSum.value = 0; fpsSamples.value = 0; droppedFrames.value = 0;
+        frameTimeHistory.value = [];
+        lanes.forEach(lane => { lane.position = 0; lane.lastDrawTime = 0; });
+      }
+
+      // Frame time graph
+      const graphPoints = computed(() => {
+        const history = frameTimeHistory.value;
+        if (history.length < 2) return '';
+        const w = 360, h = 70, maxMs = 50;
+        const step = w / (maxHistoryLength - 1);
+        return history.map((ms, i) => `${i * step},${h - Math.min(ms / maxMs, 1) * h}`).join(' ');
+      });
+
+      const graphFill = computed(() => {
+        const pts = graphPoints.value;
+        return pts ? `0,70 ${pts} 360,70` : '';
+      });
+
+      const targetY = computed(() => 70 - (16.67 / 50) * 70);
+
+      // Main animation loop
+      function animate(timestamp) {
+        if (lastTimestamp === 0) {
+          lastTimestamp = timestamp;
+          lanes.forEach(lane => lane.lastDrawTime = timestamp);
+          animationId = requestAnimationFrame(animate);
+          return;
+        }
+        const delta = timestamp - lastTimestamp;
+        lastTimestamp = timestamp;
+        frameTime.value = delta;
+        frameTimeHistory.value.push(delta);
+        if (frameTimeHistory.value.length > maxHistoryLength) frameTimeHistory.value.shift();
+        if (delta > 20) droppedFrames.value++;
+
+        frameCount++; fpsAccumulator += delta;
+        if (fpsAccumulator >= 500) {
+          const currentFps = Math.round((frameCount / fpsAccumulator) * 1000);
+          fps.value = currentFps;
+          frameCount = 0; fpsAccumulator = 0;
+          if (currentFps > 0 && currentFps < 1000) {
+            if (currentFps < minFps.value) minFps.value = currentFps;
+            if (currentFps > maxFps.value) maxFps.value = currentFps;
+            fpsSum.value += currentFps; fpsSamples.value++;
+            avgFps.value = Math.round(fpsSum.value / fpsSamples.value);
+          }
+        }
+
+        if (!isPaused.value) {
+          const pxPerMs = speed.value / 1000;
+          const w = containerWidth.value;
+          for (const lane of lanes) {
+            const interval = 1000 / lane.targetFps;
+            const elapsed = timestamp - lane.lastDrawTime;
+            if (elapsed >= interval) {
+              const steps = Math.floor(elapsed / interval);
+              const dx = pxPerMs * interval * steps;
+              lane.position = (lane.position + dx) % (w + 80);
+              lane.lastDrawTime = timestamp - (elapsed % interval);
+            }
+          }
+        }
+
+        updateGhosting(delta);
+        updateJank(delta, timestamp);
+        animationId = requestAnimationFrame(animate);
+      }
+
+      function updateContainerWidth() {
+        if (trackContainer.value) containerWidth.value = trackContainer.value.clientWidth;
+      }
+
+      function fpsColorClass(value) {
+        if (value >= 55) return 'fps-color-green';
+        if (value >= 30) return 'fps-color-amber';
+        return 'fps-color-red';
+      }
+
+      function frameTimeColorClass(ms) {
+        if (ms <= 17) return 'fps-color-green';
+        if (ms <= 33) return 'fps-color-amber';
+        return 'fps-color-red';
+      }
+
+      onMounted(() => {
+        applyPreset(0);
+        updateContainerWidth();
+        detectRefreshRate();
+        window.addEventListener('resize', updateContainerWidth);
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+        animationId = requestAnimationFrame(animate);
+      });
+
+      onUnmounted(() => {
+        cancelAnimationFrame(animationId);
+        stopScrollMonitor();
+        window.removeEventListener('resize', updateContainerWidth);
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      });
+
+      return {
+        fps, frameTime, minFps, maxFps, avgFps, droppedFrames, fpsColorClass, frameTimeColorClass, resetStats,
+        lanes, laneHeight, laneColors, presets, selectedPresetIndex, applyPreset,
+        customFpsInput, addCustomLane, removeLane,
+        speeds, selectedSpeedIndex, speed, isPaused, showGraph, showSettings, testMode, activeTab,
+        detectedHz,
+        jankScore, jankTotalDropped, jankThreshold, jankRecording, resetJank,
+        jankTimelineFill, jankTimelinePoints, jankFrameTimes, jankEvents, jankTimelineLength,
+        jankScoreColor, jankScoreLabel,
+        scrollJankScore, scrollDroppedFrames, scrollTotalFrames, resetScrollJank,
+        scrollTimelinePoints, scrollFrameTimes, onScroll, startScrollMonitor,
+        ghostingSpeed, ghostingTileWidth, ghostingPosition,
+        graphFill, graphPoints, targetY,
+        trackContainer, containerWidth,
+        isFullscreen, toggleFullscreen,
+        Math,
+      };
+    }
+  });
+
+  app.mount('#fps-app');
+  fpsVueApp = app;
+}
 </script>
   
 </body>
